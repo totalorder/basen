@@ -1,0 +1,4 @@
+CREATE TABLE basen (
+  id SERIAL PRIMARY KEY,
+  data TEXT NOT NULL
+);
