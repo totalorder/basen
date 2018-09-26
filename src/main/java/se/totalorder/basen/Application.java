@@ -9,5 +9,7 @@ public class Application {
   public static void main(String[] args) {
     System.out.println("Hello!");
     log.info("Logback!");
+    final JavalinApp javalinApp = new JavalinApp();
+    javalinApp.start();
   }
 }
