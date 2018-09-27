@@ -1,8 +1,6 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.zyxist.chainsaw' version '0.3.1'
-    id 'org.beryx.jlink' version '1.4.4'
 }
 
 group 'se.totalorder'
@@ -11,7 +9,6 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_1_10
 targetCompatibility = JavaVersion.VERSION_1_10
 
-javaModule.name = 'se.totalorder.basen'
 mainClassName = "se.totalorder.basen.Application"
 
 repositories {
@@ -28,7 +25,6 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
     testCompile 'org.hamcrest:hamcrest-library:1.3'
-    
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
 
@@ -39,33 +35,42 @@ test {
     }
 }
 
-jlink {
-    mergedModule {
-        requires 'java.naming'
-        requires 'java.xml'
-    }
-
-    addOptions '--strip-debug'
-    addOptions '--compress', '2'
-    addOptions '--no-header-files'
-    addOptions '--no-man-pages'
-}
-
-jlinkZip {
+distZip {
     enabled = false
 }
 
+task untarDist(type: Copy) {
+    dependsOn(distTar)
+
+    ext {
+        dockerDir = "${buildDir}/docker/${distTar.archiveName.substring(0, distTar.archiveName.lastIndexOf("."))}"
+    }
+
+    from tarTree(distTar.archivePath)
+    into "${buildDir}/docker"
+}
 
 task copyDockerfile(type: Copy) {
-    dependsOn(jlinkZip)
-
+    dependsOn(untarDist)
     from "Dockerfile"
-    into jlink.imageDir
+    into untarDist.dockerDir
 }
 
 task distDocker(type: Exec) {
     dependsOn(copyDockerfile)
 
-    workingDir jlink.imageDir
+    workingDir untarDist.dockerDir
     commandLine "bash", "-c", "docker build -t ${project.name} ."
+}
+
+task buildPostgres(type: Exec) {
+    commandLine "bash", "-c", "docker-compose build postgres"
+}
+
+task startPostgres(type: Exec) {
+    commandLine "bash", "-c", "docker-compose up -d postgres"
+}
+
+task stopPostgres(type: Exec) {
+    commandLine "bash", "-c", "docker-compose stop -t 0 postgres"
 }

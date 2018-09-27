@@ -1,6 +1,4 @@
-FROM frolvlad/alpine-glibc:alpine-3.8
-
-RUN apk add --no-cache libstdc++
+FROM openjdk:10.0.2-jre-slim
 
 ADD . /app
 
