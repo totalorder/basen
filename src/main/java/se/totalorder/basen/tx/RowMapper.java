@@ -1,8 +1,8 @@
-package se.totalorder.basen;
+package se.totalorder.basen.tx;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-interface RowMapper<T> {
+public interface RowMapper<T> {
   T mapRow(ResultSet resultSet) throws SQLException;
 }

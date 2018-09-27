@@ -1,14 +1,14 @@
-package se.totalorder.basen;
+package se.totalorder.basen.tx;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Function;
 import javax.sql.DataSource;
 
-public class TransactionManager {
+public class TxMan {
   private final DataSource dataSource;
 
-  public TransactionManager(final DataSource dataSource) {
+  public TxMan(final DataSource dataSource) {
     this.dataSource = dataSource;
   }
 
@@ -21,25 +21,15 @@ public class TransactionManager {
     }
   }
 
-  public Tx begin() {
-    return begin(false);
-  }
-
-  public Tx beginReadonly() {
-    return begin(true);
-  }
-
   private <T> T begin(final Function<Tx, T> callback, final boolean readOnly) {
-    final Tx tx = begin(readOnly);
+    Tx tx = null;
     try {
-      final T result = callback.apply(tx);
-      tx.commit();
-      return result;
-    } catch (final Exception e) {
-      if (!tx.readOnly) {
-        tx.rollback();
+      tx = begin(readOnly);
+      return callback.apply(tx);
+    } finally {
+      if (tx != null) {
+        tx.commitOrRollback();
       }
-      throw new RuntimeException(e);
     }
   }
 

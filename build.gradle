@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
 }
 
 group 'se.totalorder'
@@ -21,6 +22,9 @@ dependencies {
     compile 'org.flywaydb:flyway-core:5.1.4'
     compile 'org.postgresql:postgresql:42.2.5'
     compile 'io.javalin:javalin:2.2.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
+    compile 'com.google.guava:guava:23.5-jre'
+
 
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
@@ -33,6 +37,11 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
+}
+
+lombok {
+    version = "1.18.2"
+    sha256 = ""
 }
 
 distZip {
