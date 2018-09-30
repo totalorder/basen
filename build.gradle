@@ -14,6 +14,9 @@ mainClassName = "se.totalorder.basen.Application"
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://dl.bintray.com/palantir/releases'
+    }    
 }
 
 dependencies {
@@ -29,6 +32,7 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
     testCompile 'org.hamcrest:hamcrest-library:1.3'
+    testCompile 'com.palantir.docker.compose:docker-compose-rule-junit4:0.34.0'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
 

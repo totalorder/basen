@@ -15,15 +15,15 @@ public class Application {
   public static void main(String[] args) {
     final DataSource dataSource = new HikariDataSource(DatabaseConf.get("test"));
     final TxMan transactionManager = new TxMan(dataSource);
-    final UserApi numberApi = new UserApi(transactionManager);
+    final UserApi userApi = new UserApi(transactionManager);
 
     Javalin.create()
         .get("/", ctx -> ctx.result("Hello World"))
-        .get("/user", json(ctx -> numberApi.get()))
-        .get("/user/:id", json(ctx -> numberApi.get(ctx.pathParam("id"))))
-        .post("/user/:id", json(ctx -> numberApi.create(ctx.pathParam("id"), ctx.body())))
-        .put("/user/:id", json(ctx -> numberApi.put(ctx.pathParam("id"), ctx.body())))
-        .delete("/user/:id", json(ctx -> numberApi.delete(ctx.pathParam("id"))))
+        .get("/user", json(ctx -> userApi.get()))
+        .get("/user/:id", json(ctx -> userApi.get(ctx.pathParam("id"))))
+        .post("/user/:id", json(ctx -> userApi.create(ctx.pathParam("id"), ctx.body())))
+        .put("/user/:id", json(ctx -> userApi.put(ctx.pathParam("id"), ctx.body())))
+        .delete("/user/:id", json(ctx -> userApi.delete(ctx.pathParam("id"))))
         .disableStartupBanner()
         .start(8080);
   }
