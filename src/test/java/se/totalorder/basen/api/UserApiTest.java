@@ -13,8 +13,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
+import se.totalorder.basen.testutil.runhook.hooks.DockerRunHook;
 import se.totalorder.basen.tx.TxMan;
 
+@DockerRunHook("postgres")
 class UserApiTest {
   UserApi userApi;
   static DataSource dataSource;

@@ -12,7 +12,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
+import se.totalorder.basen.testutil.runhook.hooks.DockerRunHook;
 
+@DockerRunHook("postgres")
 class TransactionManagerTest {
   static DataSource dataSource;
   static TxMan txMan;

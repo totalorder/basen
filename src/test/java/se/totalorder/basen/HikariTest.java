@@ -14,8 +14,10 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import se.totalorder.basen.config.DatabaseConf;
+import se.totalorder.basen.testutil.runhook.hooks.DockerRunHook;
 import se.totalorder.basen.tx.TxMan;
 
+@DockerRunHook("postgres-migrate")
 class HikariTest {
   static DataSource dataSource;
   static TxMan transactionManager;

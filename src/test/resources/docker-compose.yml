@@ -1,0 +1,11 @@
+version: '2.1'
+services:
+  postgres:
+    build: ./dependencies/postgres
+    ports:
+    - 5432:5432
+
+  postgres-migrate:
+    build: ./dependencies/postgres
+    ports:
+    - 5432:5432

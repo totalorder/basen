@@ -3,6 +3,7 @@ package se.totalorder.basen.testutil.runhook.hooks;
 import se.totalorder.basen.testutil.runhook.RunHookProvider;
 
 import java.lang.annotation.*;
+import se.totalorder.basen.testutil.runhook.hooks.impl.LoggingRunHookImpl;
 
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -14,8 +15,8 @@ public @interface LoggingRunHook {
 
     @Target({ ElementType.TYPE, ElementType.METHOD })
     @Retention(RetentionPolicy.RUNTIME)
-    @RunHookProvider(config = LoggingRunHook.class, hook = LoggingRunHookImpl.class)
     @Inherited
+    @RunHookProvider(config = LoggingRunHook.class, hook = LoggingRunHookImpl.class)
     @interface List {
         LoggingRunHook[] value();
     }

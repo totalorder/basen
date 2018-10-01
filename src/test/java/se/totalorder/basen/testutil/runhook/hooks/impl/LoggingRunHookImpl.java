@@ -1,7 +1,8 @@
-package se.totalorder.basen.testutil.runhook.hooks;
+package se.totalorder.basen.testutil.runhook.hooks.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import se.totalorder.basen.testutil.runhook.RunHook;
+import se.totalorder.basen.testutil.runhook.hooks.LoggingRunHook;
 
 @Slf4j
 public class LoggingRunHookImpl implements RunHook {
