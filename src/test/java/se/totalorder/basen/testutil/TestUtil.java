@@ -1,4 +1,4 @@
-package se.totalorder.basen;
+package se.totalorder.basen.testutil;
 
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;

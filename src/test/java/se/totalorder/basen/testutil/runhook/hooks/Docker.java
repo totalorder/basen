@@ -8,21 +8,22 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import se.totalorder.basen.testutil.runhook.hooks.impl.DockerRunHookImpl;
+
+import se.totalorder.basen.testutil.runhook.hooks.impl.DockerImpl;
 
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(DockerRunHook.List.class)
+@Repeatable(Docker.List.class)
 @Inherited
-@RunHookProvider(config = DockerRunHook.class, hook = DockerRunHookImpl.class)
-public @interface DockerRunHook {
+@RunHookProvider(annotation = Docker.class, hook = DockerImpl.class)
+public @interface Docker {
     String value();
 
     @Target({ ElementType.TYPE, ElementType.METHOD })
     @Retention(RetentionPolicy.RUNTIME)
     @Inherited
-    @RunHookProvider(config = DockerRunHook.class, hook = DockerRunHookImpl.class)
+    @RunHookProvider(annotation = Docker.class, hook = DockerImpl.class)
     @interface List {
-        DockerRunHook[] value();
+        Docker[] value();
     }
 }

@@ -13,17 +13,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
-import se.totalorder.basen.testutil.runhook.hooks.DockerRunHook;
+import se.totalorder.basen.testutil.runhook.hooks.Docker;
+import se.totalorder.basen.testutil.runhook.hooks.Postgres;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresMigrate;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresMigratePort;
 import se.totalorder.basen.tx.TxMan;
 
-@DockerRunHook("postgres")
+@PostgresMigrate
 class UserApiTest {
+  @PostgresMigratePort
+  static int postgresPort;
   UserApi userApi;
   static DataSource dataSource;
 
   @BeforeAll
   static void setUpClass() {
-    dataSource = new HikariDataSource(DatabaseConf.get("test"));
+    dataSource = new HikariDataSource(DatabaseConf.get("test", postgresPort));
     final Flyway flyway = new Flyway();
     flyway.setDataSource(dataSource);
     flyway.migrate();

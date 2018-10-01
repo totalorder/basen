@@ -1,6 +1,4 @@
-package se.totalorder.basen.testutil.runhook;
-
-import org.junit.jupiter.api.extension.ExtendWith;
+package se.totalorder.basen.testutil.runhook.hooks;
 
 import java.lang.annotation.*;
 

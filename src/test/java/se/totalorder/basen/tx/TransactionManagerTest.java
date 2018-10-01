@@ -12,16 +12,20 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
-import se.totalorder.basen.testutil.runhook.hooks.DockerRunHook;
+import se.totalorder.basen.testutil.runhook.hooks.Postgres;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
 
-@DockerRunHook("postgres")
+@Postgres
 class TransactionManagerTest {
+  @PostgresPort
+  static int postgresPort;
+
   static DataSource dataSource;
   static TxMan txMan;
 
   @BeforeAll
   static void beforeAll() {
-    dataSource = new HikariDataSource(DatabaseConf.get("test"));
+    dataSource = new HikariDataSource(DatabaseConf.get("test", postgresPort));
     txMan = new TxMan(dataSource);
     txMan.begin(tx -> {
       tx.update("DROP TABLE IF EXISTS record;");

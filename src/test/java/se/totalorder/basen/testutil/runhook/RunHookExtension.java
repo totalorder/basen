@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
@@ -36,11 +35,13 @@ public class RunHookExtension implements BeforeAllCallback, TestInstancePostProc
 
         final List<RunHookConfig> runHookConfigs = findAnnotations(testClass, new HashSet<>(), null);
         for (final RunHookConfig runHookConfig : runHookConfigs) {
-            if (initializedHooks.get(runHookConfig) == null) {
-                final RunHook runHookInstance = runHookConfig.provider.hook().getConstructor(runHookConfig.provider.config())
+            final RunHook runHookInstance = runHookConfig.provider.hook().getConstructor(runHookConfig.provider.annotation())
                     .newInstance(runHookConfig.annotation);
+            runHookInstance.beforeAll(testClass);
+
+            if (initializedHooks.get(runHookConfig) == null) {
                 initializedHooks.put(runHookConfig, runHookInstance);
-                runHookInstance.start();
+                runHookInstance.setupOnce();
             }
         }
     }
@@ -61,7 +62,7 @@ public class RunHookExtension implements BeforeAllCallback, TestInstancePostProc
 
         if (element.isAnnotationPresent(RunHookProvider.class)) {
             final RunHookProvider provider = element.getAnnotationsByType(RunHookProvider.class)[0];
-            for (Annotation annotation : superElement.getAnnotationsByType(provider.config())) {
+            for (Annotation annotation : superElement.getAnnotationsByType(provider.annotation())) {
                 configs.add(new RunHookConfig(provider, annotation));
             }
         }
@@ -78,7 +79,7 @@ public class RunHookExtension implements BeforeAllCallback, TestInstancePostProc
     @Override
     public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
         for (final RunHook runHook : initializedHooks.values()) {
-            runHook.instanceCreated(testInstance);
+//            runHook.instanceCreated(testInstance);
         }
     }
 

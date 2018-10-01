@@ -10,6 +10,6 @@ import java.lang.annotation.*;
 @Inherited
 @ExtendWith(RunHookExtension.class)
 public @interface RunHookProvider {
-    Class<? extends Annotation> config();
+    Class<? extends Annotation> annotation();
     Class<? extends RunHook> hook();
 }
