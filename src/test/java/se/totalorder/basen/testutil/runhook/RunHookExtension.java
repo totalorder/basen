@@ -4,15 +4,17 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
 @Slf4j
-public class RunHookExtension implements BeforeAllCallback, ExtensionContext.Store.CloseableResource {
+public class RunHookExtension implements BeforeAllCallback, TestInstancePostProcessor, ExtensionContext.Store.CloseableResource {
 
     private static boolean started = false;
     private static boolean stopped = false;
@@ -71,6 +73,13 @@ public class RunHookExtension implements BeforeAllCallback, ExtensionContext.Sto
         }
 
         return configs;
+    }
+
+    @Override
+    public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
+        for (final RunHook runHook : initializedHooks.values()) {
+            runHook.instanceCreated(testInstance);
+        }
     }
 
     @Data

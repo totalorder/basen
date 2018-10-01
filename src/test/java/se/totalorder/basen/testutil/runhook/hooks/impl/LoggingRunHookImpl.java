@@ -1,8 +1,11 @@
 package se.totalorder.basen.testutil.runhook.hooks.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import se.totalorder.basen.testutil.runhook.DockerPort;
 import se.totalorder.basen.testutil.runhook.RunHook;
 import se.totalorder.basen.testutil.runhook.hooks.LoggingRunHook;
+
+import java.lang.reflect.Field;
 
 @Slf4j
 public class LoggingRunHookImpl implements RunHook {
@@ -20,5 +23,10 @@ public class LoggingRunHookImpl implements RunHook {
     @Override
     public void stop() {
         log.info("Test ended: " + config.value());
+    }
+
+    @Override
+    public void instanceCreated(Object testInstance) throws Exception {
+
     }
 }
