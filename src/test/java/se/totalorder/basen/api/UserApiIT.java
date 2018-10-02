@@ -1,79 +1,111 @@
 package se.totalorder.basen.api;
 
-import jdk.incubator.http.HttpClient;
-import jdk.incubator.http.HttpRequest;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import se.totalorder.basen.model.User;
-import se.totalorder.basen.testutil.runhook.hooks.App;
-import se.totalorder.basen.testutil.runhook.hooks.AppPort;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresMigrate;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresMigratePort;
-
-import javax.sql.DataSource;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zaxxer.hikari.HikariDataSource;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import javax.sql.DataSource;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import se.totalorder.basen.config.DatabaseConf;
+import se.totalorder.basen.model.User;
+import se.totalorder.basen.testutil.TestUtil;
+import se.totalorder.basen.testutil.runhook.hooks.App;
+import se.totalorder.basen.testutil.runhook.hooks.AppPort;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegration;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegrationPort;
+import se.totalorder.basen.tx.TxMan;
+
+@PostgresIntegration
 @App
 class UserApiIT {
   @AppPort
   static int appPort;
-  HttpClient client;
+
+  @PostgresIntegrationPort
+  static int postgresPort;
+
+  static OkHttpClient client = new OkHttpClient();
+  static ObjectMapper objectMapper = new ObjectMapper();
+  private static TxMan txMan;
 
   @BeforeAll
-  static void setUpClass() {
-      HttpClient client = HttpClient.newHttpClient();
-
+  static void beforeAll() {
+    final DataSource dataSource = new HikariDataSource(DatabaseConf.get("test", postgresPort));
+    TestUtil.migrateDatabase(dataSource);
+    txMan = new TxMan(dataSource);
   }
 
   @BeforeEach
   void setUp() {
-
+    txMan.begin(tx -> tx.update("DELETE FROM usr;"));
   }
 
-  void request(String URL) {
-      HttpRequest request = HttpRequest.newBuilder()
-              .uri(URI.create("http://openjdk.java.net/"))
-              .build();
+  Request.Builder request(final String url) {
+    return new Request.Builder().url("http://localhost:" + appPort + url);
+  }
+
+  <T> T post(final String url, final String body, final Class<T> responseClass) {
+    return send(request(url).post(RequestBody.create(MediaType.parse("text/plain"), body)).build(), responseClass);
+  }
+
+  <T> T put(final String url, final String body, final Class<T> responseClass) {
+    return send(request(url).put(RequestBody.create(MediaType.parse("text/plain"), body)).build(), responseClass);
+  }
+
+  <T> T get(final String url, final Class<T> responseClass) {
+    return send(request(url).get().build(), responseClass);
+  }
+
+  <T> T delete(final String url, final Class<T> responseClass) {
+    return send(request(url).delete().build(), responseClass);
+  }
+
+  <T> T send(final Request request, final Class<T> responseClass) {
+    try {
+      return objectMapper.readValue(client.newCall(request).execute().body().string(), responseClass);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Test
   void crud() {
-    final User created = userApi.create("1", "asd");
+    final User created = post("/user/1", "asd", User.class);
     assertThat(created, is(new User(1, "asd")));
 
-    final User found = userApi.get("1");
+    final User found = get("/user/1", User.class);
     assertThat(created, is(found));
 
-    final User modified = userApi.put("1", "qwe");
+    final User modified = put("/user/1", "qwe", User.class);
     assertThat(modified, is(new User(1, "qwe")));
 
-    final User foundAgain = userApi.get("1");
+    final User foundAgain = get("/user/1", User.class);
     assertThat(foundAgain, is(modified));
 
-    final User deleted = userApi.delete("1");
+    final User deleted = delete("/user/1", User.class);
     assertThat(deleted, is(modified));
 
-    final User gone = userApi.get("1");
+    final User gone = get("/user/1", User.class);
     assertThat(gone, nullValue());
   }
 
   @Test
   void getMultiple() {
-    final User first = userApi.create("1", "asd");
-    final User second = userApi.create("2", "qwe");
+    final User first = post("/user/1", "asd", User.class);
+    final User second = post("/user/2", "qwe", User.class);
 
-    final List<User> users = userApi.get();
-    assertThat(users, is(listOf(first, second)));
-  }
-
-  private <T> List<T> listOf(T... elements) {
-    return Arrays.asList(elements);
+    final User[] users = get("/user", User[].class);
+    assertThat(users, is(new User[]{first, second}));
   }
 }

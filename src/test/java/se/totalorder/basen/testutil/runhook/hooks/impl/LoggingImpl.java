@@ -6,24 +6,24 @@ import se.totalorder.basen.testutil.runhook.hooks.Logging;
 
 @Slf4j
 public class LoggingImpl implements RunHook {
-    private Logging config;
+  private Logging config;
 
-    public LoggingImpl(final Logging config) {
-        this.config = config;
-    }
+  public LoggingImpl(final Logging config) {
+    this.config = config;
+  }
 
-    @Override
-    public void setupOnce() throws Exception {
+  @Override
+  public void setupOnce() throws Exception {
 
-    }
+  }
 
-    @Override
-    public void beforeAll(Class<?> testClass) {
-        log.info("Test run started: " + config.value());
-    }
+  @Override
+  public void beforeAll(Class<?> testClass) {
+    log.info("Test run started: " + config.value());
+  }
 
-    @Override
-    public void stop() {
-        log.info("Test ended: " + config.value());
-    }
+  @Override
+  public void stop() {
+    log.info("Test ended: " + config.value());
+  }
 }

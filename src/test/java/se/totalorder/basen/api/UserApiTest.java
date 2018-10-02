@@ -1,7 +1,8 @@
 package se.totalorder.basen.api;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Arrays;
@@ -13,15 +14,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
-import se.totalorder.basen.testutil.runhook.hooks.Docker;
-import se.totalorder.basen.testutil.runhook.hooks.Postgres;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresMigrate;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresMigratePort;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegration;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegrationPort;
 import se.totalorder.basen.tx.TxMan;
 
-@PostgresMigrate
+@PostgresIntegration
 class UserApiTest {
-  @PostgresMigratePort
+  @PostgresIntegrationPort
   static int postgresPort;
   UserApi userApi;
   static DataSource dataSource;

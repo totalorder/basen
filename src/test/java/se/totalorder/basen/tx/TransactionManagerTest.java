@@ -1,7 +1,7 @@
 package se.totalorder.basen.tx;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Arrays;
@@ -57,7 +57,7 @@ class TransactionManagerTest {
     txMan.begin(tx -> tx.update("INSERT INTO record (key, value) VALUES (?, ?);", 123, "abc"));
 
     final List<Record> records = txMan.beginReadonly(tx ->
-      tx.execute("SELECT * FROM record;", recordMapper));
+        tx.execute("SELECT * FROM record;", recordMapper));
 
     assertThat(records, is(listOf(new Record(123, "abc"))));
   }

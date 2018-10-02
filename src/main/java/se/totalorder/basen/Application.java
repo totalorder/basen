@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.javalin.Context;
 import io.javalin.Handler;
 import io.javalin.Javalin;
+import java.util.Optional;
 import java.util.function.Function;
 import javax.sql.DataSource;
 import se.totalorder.basen.api.UserApi;
@@ -13,7 +14,8 @@ import se.totalorder.basen.tx.TxMan;
 
 public class Application {
   public static void main(String[] args) {
-    final DataSource dataSource = new HikariDataSource(DatabaseConf.get("test"));
+    final String env = Optional.ofNullable(System.getenv("ENV")).orElse("dev");
+    final DataSource dataSource = new HikariDataSource(DatabaseConf.get(env));
     final TxMan transactionManager = new TxMan(dataSource);
     final UserApi userApi = new UserApi(transactionManager);
 

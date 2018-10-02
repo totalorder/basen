@@ -1,8 +1,8 @@
 package se.totalorder.basen.api;
 
 import java.util.List;
-import se.totalorder.basen.tx.TxMan;
 import se.totalorder.basen.model.User;
+import se.totalorder.basen.tx.TxMan;
 
 public class UserApi {
 

@@ -9,8 +9,10 @@ public class DatabaseConf {
 
   public static HikariConfig get(final String env, final int port) {
 
+    final String host = env.equals("integration") ? "postgres-integration" : "localhost";
+
     final HikariConfig config = new HikariConfig();
-    config.setJdbcUrl("jdbc:postgresql://localhost:" + port + "/basen");
+    config.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/basen");
     config.setAutoCommit(false);
     config.setUsername("basen");
     config.setPassword("basen");
