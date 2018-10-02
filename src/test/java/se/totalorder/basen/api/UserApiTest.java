@@ -14,13 +14,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegration;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegrationPort;
+import se.totalorder.basen.testutil.runhook.hooks.Postgres;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
 import se.totalorder.basen.tx.TxMan;
 
-@PostgresIntegration
+@Postgres
 class UserApiTest {
-  @PostgresIntegrationPort
+  @PostgresPort
   static int postgresPort;
   UserApi userApi;
   static DataSource dataSource;

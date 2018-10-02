@@ -7,8 +7,6 @@ import static org.hamcrest.Matchers.nullValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import javax.sql.DataSource;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -22,17 +20,17 @@ import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.TestUtil;
 import se.totalorder.basen.testutil.runhook.hooks.App;
 import se.totalorder.basen.testutil.runhook.hooks.AppPort;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegration;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegrationPort;
+import se.totalorder.basen.testutil.runhook.hooks.Postgres;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
 import se.totalorder.basen.tx.TxMan;
 
-@PostgresIntegration
+@Postgres
 @App
 class UserApiIT {
   @AppPort
   static int appPort;
 
-  @PostgresIntegrationPort
+  @PostgresPort
   static int postgresPort;
 
   static OkHttpClient client = new OkHttpClient();
@@ -73,7 +71,11 @@ class UserApiIT {
 
   <T> T send(final Request request, final Class<T> responseClass) {
     try {
-      return objectMapper.readValue(client.newCall(request).execute().body().string(), responseClass);
+      final String body = client.newCall(request).execute().body().string();
+      if (body.isEmpty()) {
+          return null;
+      }
+      return objectMapper.readValue(body, responseClass);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

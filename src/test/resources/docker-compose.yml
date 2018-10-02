@@ -7,21 +7,11 @@ services:
     ports:
     - 8080
     depends_on:
-    - postgres-integration
+    - postgres
     links:
-      - postgres-integration
+      - postgres
 
   postgres:
-    build: ./dependencies/postgres
-    ports:
-    - 5432
-
-  postgres-migrate:
-    build: ./dependencies/postgres
-    ports:
-    - 5432
-
-  postgres-integration:
     build: ./dependencies/postgres
     ports:
     - 5432

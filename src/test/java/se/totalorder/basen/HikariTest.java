@@ -16,13 +16,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegration;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresIntegrationPort;
+import se.totalorder.basen.testutil.runhook.hooks.Postgres;
+import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
 import se.totalorder.basen.tx.TxMan;
 
-@PostgresIntegration
+@Postgres
 class HikariTest {
-  @PostgresIntegrationPort
+  @PostgresPort
   static int postgresPort;
   static DataSource dataSource;
   static TxMan transactionManager;

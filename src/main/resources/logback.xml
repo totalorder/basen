@@ -10,5 +10,7 @@
         <appender-ref ref="CONSOLE" />
     </root>
     <logger name="org.eclipse.jetty" level="ERROR" />
-    <logger name="com.palantir.docker.compose" level="DEBUG" />
+    <logger name="com.zaxxer.hikari" level="ERROR" />
+    <logger name="org.flywaydb" level="ERROR" />
+    <!--<logger name="com.palantir.docker" level="DEBUG" />-->
 </configuration>

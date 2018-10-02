@@ -9,7 +9,7 @@ public class DatabaseConf {
 
   public static HikariConfig get(final String env, final int port) {
 
-    final String host = env.equals("integration") ? "postgres-integration" : "localhost";
+    final String host = env.equals("integration") ? "postgres" : "localhost";
 
     final HikariConfig config = new HikariConfig();
     config.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/basen");

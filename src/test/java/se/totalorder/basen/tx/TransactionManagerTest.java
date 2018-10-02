@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,11 @@ class TransactionManagerTest {
       tx.update("CREATE TABLE record (key INT PRIMARY KEY, value TEXT NOT NULL);");
       return null;
     });
+  }
+
+  @AfterAll
+  static void afterAll() {
+    txMan.begin(tx -> tx.update("DROP TABLE IF EXISTS record;"));
   }
 
   @BeforeEach
