@@ -1,5 +1,10 @@
 version: '2.1'
 services:
+  app:
+    build: ./dependencies/app
+    ports:
+      - 8080
+
   postgres:
     build: ./dependencies/postgres
     ports:
