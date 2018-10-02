@@ -8,25 +8,31 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.sql.DataSource;
+
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import se.totalorder.basen.config.DatabaseConf;
-import se.totalorder.basen.testutil.runhook.hooks.Postgres;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
+import se.totalorder.basen.testutil.composed.Composed;
 
-@Postgres
+@Slf4j
 class TransactionManagerTest {
-  @PostgresPort
-  static int postgresPort;
+  @RegisterExtension
+  static Composed postgres = Composed.builder()
+      .projectName("basentest")
+      .dockerComposeFilePath("src/test/resources/docker-compose.yml")
+      .serviceName("postgres")
+      .build();
 
   static DataSource dataSource;
   static TxMan txMan;
 
   @BeforeAll
   static void beforeAll() {
-    dataSource = new HikariDataSource(DatabaseConf.get("test", postgresPort));
+    dataSource = new HikariDataSource(DatabaseConf.get("test", postgres.externalPort(5432)));
     txMan = new TxMan(dataSource);
     txMan.begin(tx -> {
       tx.update("DROP TABLE IF EXISTS record;");
