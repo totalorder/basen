@@ -13,7 +13,6 @@ class ComposedTest {
   static Composed postgres = Composed.builder()
       .projectName("basentest")
       .dockerComposeFilePath("docker-compose.yml")
-//      .dockerComposeFilePath("sasd.yml")
       .serviceName("postgres")
       .build();
 
