@@ -14,22 +14,23 @@ import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import se.totalorder.basen.config.DatabaseConf;
+import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.basen.testutil.runhook.hooks.Postgres;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
+import se.totalorder.basen.testutil.composed.Composed;
 import se.totalorder.basen.tx.TxMan;
 
-@Postgres
 class HikariTest {
-  @PostgresPort
-  static int postgresPort;
+  @RegisterExtension
+  static Composed postgres = ComposedService.postgres;
+
   static DataSource dataSource;
   static TxMan transactionManager;
 
   @BeforeAll
   static void beforeAll() {
-    dataSource = new HikariDataSource(DatabaseConf.get("test", postgresPort));
+    dataSource = new HikariDataSource(DatabaseConf.get("test", postgres.externalPort(5432)));
     TestUtil.migrateDatabase(dataSource);
 
     transactionManager = new TxMan(dataSource);

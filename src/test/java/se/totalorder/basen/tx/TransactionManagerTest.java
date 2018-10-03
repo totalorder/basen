@@ -9,23 +9,18 @@ import java.util.List;
 import java.util.Objects;
 import javax.sql.DataSource;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import se.totalorder.basen.config.DatabaseConf;
+import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.composed.Composed;
 
-@Slf4j
 class TransactionManagerTest {
   @RegisterExtension
-  static Composed postgres = Composed.builder()
-      .projectName("basentest")
-      .dockerComposeFilePath("src/test/resources/docker-compose.yml")
-      .serviceName("postgres")
-      .build();
+  static Composed postgres = ComposedService.postgres;
 
   static DataSource dataSource;
   static TxMan txMan;

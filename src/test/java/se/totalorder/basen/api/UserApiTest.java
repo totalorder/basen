@@ -14,20 +14,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
-import se.totalorder.basen.testutil.runhook.hooks.Postgres;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
+import se.totalorder.basen.testutil.ComposedService;
+import se.totalorder.basen.testutil.composed.Composed;
 import se.totalorder.basen.tx.TxMan;
 
-@Postgres
 class UserApiTest {
-  @PostgresPort
-  static int postgresPort;
+  static Composed postgres = ComposedService.postgres;
   UserApi userApi;
   static DataSource dataSource;
 
   @BeforeAll
   static void setUpClass() {
-    dataSource = new HikariDataSource(DatabaseConf.get("test", postgresPort));
+    dataSource = new HikariDataSource(DatabaseConf.get("test", postgres.externalPort(5432)));
     final Flyway flyway = new Flyway();
     flyway.setDataSource(dataSource);
     flyway.migrate();

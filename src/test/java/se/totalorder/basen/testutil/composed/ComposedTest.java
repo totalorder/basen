@@ -8,11 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Slf4j
-class TestComposed {
+class ComposedTest {
   @RegisterExtension
   static Composed postgres = Composed.builder()
       .projectName("basentest")
-      .dockerComposeFilePath("src/test/resources/docker-compose.yml")
+      .dockerComposeFilePath("docker-compose.yml")
+//      .dockerComposeFilePath("sasd.yml")
       .serviceName("postgres")
       .build();
 

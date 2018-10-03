@@ -15,23 +15,20 @@ import okhttp3.RequestBody;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
+import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.basen.testutil.runhook.hooks.App;
-import se.totalorder.basen.testutil.runhook.hooks.AppPort;
-import se.totalorder.basen.testutil.runhook.hooks.Postgres;
-import se.totalorder.basen.testutil.runhook.hooks.PostgresPort;
+import se.totalorder.basen.testutil.composed.Composed;
 import se.totalorder.basen.tx.TxMan;
 
-@Postgres
-@App
 class UserApiIT {
-  @AppPort
-  static int appPort;
+  @RegisterExtension
+  static Composed postgres = ComposedService.postgres;
 
-  @PostgresPort
-  static int postgresPort;
+  @RegisterExtension
+  static Composed app = ComposedService.app;
 
   static OkHttpClient client = new OkHttpClient();
   static ObjectMapper objectMapper = new ObjectMapper();
@@ -39,7 +36,7 @@ class UserApiIT {
 
   @BeforeAll
   static void beforeAll() {
-    final DataSource dataSource = new HikariDataSource(DatabaseConf.get("test", postgresPort));
+    final DataSource dataSource = new HikariDataSource(DatabaseConf.get("test", postgres.externalPort(5432)));
     TestUtil.migrateDatabase(dataSource);
     txMan = new TxMan(dataSource);
   }
@@ -50,7 +47,7 @@ class UserApiIT {
   }
 
   Request.Builder request(final String url) {
-    return new Request.Builder().url("http://localhost:" + appPort + url);
+    return new Request.Builder().url("http://localhost:" + app.externalPort(8080) + url);
   }
 
   <T> T post(final String url, final String body, final Class<T> responseClass) {
