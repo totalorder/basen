@@ -1,4 +1,4 @@
-package se.totalorder.basen.tx;
+package se.totalorder.lib.tx;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.testutil.ComposedService;
-import se.totalorder.basen.testutil.composed.Composed;
+import se.totalorder.lib.composed.Composed;
 
 class TransactionManagerTest {
   @RegisterExtension

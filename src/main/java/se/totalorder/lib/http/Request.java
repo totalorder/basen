@@ -1,4 +1,4 @@
-package se.totalorder.basen.http;
+package se.totalorder.lib.http;
 
 import lombok.Builder;
 import lombok.Data;

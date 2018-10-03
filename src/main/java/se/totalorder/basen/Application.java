@@ -10,7 +10,7 @@ import java.util.function.Function;
 import javax.sql.DataSource;
 import se.totalorder.basen.api.UserApi;
 import se.totalorder.basen.config.DatabaseConf;
-import se.totalorder.basen.tx.TxMan;
+import se.totalorder.lib.tx.TxMan;
 
 public class Application {
   public static void main(String[] args) {

@@ -1,7 +1,7 @@
 package se.totalorder.basen.testutil;
 
 import com.palantir.docker.compose.connection.waiting.HealthChecks;
-import se.totalorder.basen.testutil.composed.Composed;
+import se.totalorder.lib.composed.Composed;
 
 public class ComposedService {
   private static Composed.ComposedBuilder builder = Composed.builder()

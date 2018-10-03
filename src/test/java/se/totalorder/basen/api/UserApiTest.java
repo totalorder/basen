@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
-import se.totalorder.basen.testutil.composed.Composed;
-import se.totalorder.basen.tx.TxMan;
+import se.totalorder.lib.composed.Composed;
+import se.totalorder.lib.tx.TxMan;
 
 class UserApiTest {
   static Composed postgres = ComposedService.postgres;

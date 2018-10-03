@@ -1,4 +1,4 @@
-package se.totalorder.basen;
+package se.totalorder.lib.tx;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -18,8 +18,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.basen.testutil.composed.Composed;
-import se.totalorder.basen.tx.TxMan;
+import se.totalorder.lib.composed.Composed;
 
 class HikariTest {
   @RegisterExtension

@@ -1,7 +1,7 @@
 package se.totalorder.basen.model;
 
 import lombok.Data;
-import se.totalorder.basen.tx.RowMapper;
+import se.totalorder.lib.tx.RowMapper;
 
 @Data
 public class User {

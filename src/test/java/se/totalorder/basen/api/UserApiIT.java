@@ -11,12 +11,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import se.totalorder.basen.config.DatabaseConf;
-import se.totalorder.basen.http.Client;
+import se.totalorder.lib.http.Client;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.basen.testutil.composed.Composed;
-import se.totalorder.basen.tx.TxMan;
+import se.totalorder.lib.composed.Composed;
+import se.totalorder.lib.tx.TxMan;
 
 class UserApiIT {
   @RegisterExtension

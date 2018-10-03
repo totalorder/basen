@@ -1,4 +1,4 @@
-package se.totalorder.basen.testutil.composed;
+package se.totalorder.lib.composed;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;

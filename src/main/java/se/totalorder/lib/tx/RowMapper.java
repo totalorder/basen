@@ -1,4 +1,4 @@
-package se.totalorder.basen.tx;
+package se.totalorder.lib.tx;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
