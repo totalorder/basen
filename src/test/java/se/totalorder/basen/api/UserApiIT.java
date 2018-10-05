@@ -1,22 +1,23 @@
 package se.totalorder.basen.api;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-
 import com.zaxxer.hikari.HikariDataSource;
-import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import se.deadlock.composed.Composed;
 import se.totalorder.basen.config.DatabaseConf;
-import se.totalorder.lib.http.Client;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.lib.composed.Composed;
+import se.totalorder.lib.http.Client;
 import se.totalorder.lib.tx.TxMan;
+
+import javax.sql.DataSource;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 class UserApiIT {
   @RegisterExtension

@@ -17,6 +17,9 @@ repositories {
     maven {
         url 'https://dl.bintray.com/palantir/releases'
     }    
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
 }
 
 dependencies {
@@ -35,6 +38,7 @@ dependencies {
     testCompile 'com.palantir.docker.compose:docker-compose-rule-junit4:0.34.0'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     testCompile 'org.junit.jupiter:junit-jupiter-migrationsupport:5.2.0'
+    testCompile 'se.deadlock:composed:0.0.1-SNAPSHOT'
 }
 
 test {

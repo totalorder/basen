@@ -1,22 +1,22 @@
 package se.totalorder.lib.tx;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
 import com.zaxxer.hikari.HikariDataSource;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import javax.sql.DataSource;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import se.deadlock.composed.Composed;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.testutil.ComposedService;
-import se.totalorder.lib.composed.Composed;
+
+import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 class TransactionManagerTest {
   @RegisterExtension

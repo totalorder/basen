@@ -1,24 +1,25 @@
 package se.totalorder.lib.tx;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-
 import com.zaxxer.hikari.HikariDataSource;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import se.deadlock.composed.Composed;
+import se.totalorder.basen.config.DatabaseConf;
+import se.totalorder.basen.testutil.ComposedService;
+import se.totalorder.basen.testutil.TestUtil;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import javax.sql.DataSource;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import se.totalorder.basen.config.DatabaseConf;
-import se.totalorder.basen.testutil.ComposedService;
-import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.lib.composed.Composed;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
 
 class HikariTest {
   @RegisterExtension

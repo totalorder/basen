@@ -1,22 +1,23 @@
 package se.totalorder.basen.api;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-
 import com.zaxxer.hikari.HikariDataSource;
-import java.util.Arrays;
-import java.util.List;
-import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import se.deadlock.composed.Composed;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
-import se.totalorder.lib.composed.Composed;
 import se.totalorder.lib.tx.TxMan;
+
+import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 class UserApiTest {
   static Composed postgres = ComposedService.postgres;
