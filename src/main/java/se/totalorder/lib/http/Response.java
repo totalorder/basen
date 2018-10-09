@@ -2,13 +2,17 @@ package se.totalorder.lib.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import javax.annotation.Nullable;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.experimental.Delegate;
 
-@Data
+import javax.annotation.Nullable;
+import java.io.IOException;
+
+@AllArgsConstructor
 public class Response {
+  @Delegate
   private final okhttp3.Response okResponse;
+
   private final ObjectMapper objectMapper;
 
   @Nullable
@@ -37,10 +41,6 @@ public class Response {
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public int statusCode() {
-    return okResponse.code();
   }
 
   public String text() {

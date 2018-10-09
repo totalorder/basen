@@ -1,24 +1,14 @@
 package se.totalorder.lib.http;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.experimental.Delegate;
 
-@Data
+@AllArgsConstructor
 public class Request {
-  public final String url;
-  public final String mimeType;
-  public final String body;
-  private final okhttp3.Request.Builder okBuilder;
+  @Delegate
+  private final okhttp3.Request okRequest;
 
-  @Builder
-  public Request(final String url, final String mimeType, final String body) {
-    this.url = url;
-    this.mimeType = mimeType != null ? mimeType : "text/plain";
-    this.body = body;
-    this.okBuilder = new okhttp3.Request.Builder().url(url);
-  }
-
-  public okhttp3.Request.Builder okBuilder() {
-    return okBuilder;
+  public okhttp3.Request unwrap() {
+    return okRequest;
   }
 }

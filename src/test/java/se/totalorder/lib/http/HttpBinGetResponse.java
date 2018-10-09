@@ -6,6 +6,6 @@ import lombok.Data;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-class HttpBinGetResponse {
+public class HttpBinGetResponse {
   final Map<String, String> args;
 }

@@ -1,13 +1,16 @@
 package se.totalorder.lib.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import okhttp3.MediaType;
+import lombok.experimental.Delegate;
 import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
+
+import javax.annotation.Nullable;
 
 public class Client {
+  @Delegate(excludes = DelegateExcludes.class)
   private final OkHttpClient okClient;
+
+  @Nullable
   private final String baseUrl;
   private final ObjectMapper objectMapper;
 
@@ -16,64 +19,53 @@ public class Client {
   }
 
   public Client(final String baseUrl) {
-    this(new OkHttpClient(), baseUrl, new ObjectMapper());
-  }
-
-  public Client(final OkHttpClient okClient, final String baseUrl, final ObjectMapper objectMapper) {
-    this.okClient = okClient;
+    super();
+    this.okClient = new OkHttpClient();
     this.baseUrl = baseUrl;
-    this.objectMapper = objectMapper;
+    this.objectMapper = new ObjectMapper();
   }
 
-  public Response post(final Request request) {
-    return execute(request.okBuilder().post(RequestBody.create(MediaType.parse(request.mimeType), request.body)).build());
-  }
-
-  public Response post(final String url, final String body) {
-    return post(request(url).body(body).build());
-  }
-
-  public Response put(final Request request) {
-    return execute(request.okBuilder().put(RequestBody.create(MediaType.parse(request.mimeType), request.body)).build());
-  }
-
-  public Response put(final String url, final String body) {
-    return put(request(url).body(body).build());
-  }
-
-  public Response get(final Request request) {
-    return execute(request.okBuilder().get().build());
+  public Call newCall(Request request) {
+    return new Call(okClient.newCall(request.unwrap()), objectMapper);
   }
 
   public Response get(final String url) {
-    return get(request(url).build());
+    return execute(request().url(url).get().build());
   }
 
-  public Response delete(final Request request) {
-    return execute(request.okBuilder().delete().build());
+  public Response post(final String url, final String body) {
+    return execute(request().url(url).post(body).build());
+  }
+
+  public Response put(final String url, final String body) {
+    return execute(request().url(url).put(body).build());
   }
 
   public Response delete(final String url) {
-    return delete(request(url).build());
+    return execute(request().url(url).delete().build());
   }
 
-  public Request.RequestBuilder request(final String url) {
-    if (baseUrl != null) {
-      return Request.builder().url(baseUrl + url);
-    }
-
-    return Request.builder().url(url);
+  public Response delete(final String url, final String body) {
+    return execute(request().url(url).delete(body).build());
   }
 
-  public Response execute(final okhttp3.Request request) {
-    try {
-      if (baseUrl != null && !request.url().toString().startsWith(baseUrl)) {
-        throw new RuntimeException("Request url " + request.url().toString() + " does not match baseUrl "
-            + baseUrl + ". Consider using a plain OkHttpClient if this is intended.");
-      }
-      return new Response(okClient.newCall(request).execute(), objectMapper);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+  public Response execute(final Request request) {
+    if (baseUrl != null && !request.url().toString().startsWith(baseUrl)) {
+      throw new RuntimeException("Request url " + request.url().toString() + " does not match baseUrl "
+          + baseUrl + ". Consider using a plain OkHttpClient if this is intended.");
     }
+    return newCall(request).execute();
+  }
+
+  public RequestBuilder request(final String url) {
+    return request().url(url);
+  }
+
+  public RequestBuilder request() {
+    return new RequestBuilder(baseUrl);
+  }
+
+  interface DelegateExcludes {
+    okhttp3.Call newCall(okhttp3.Request request);
   }
 }
