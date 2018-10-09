@@ -30,7 +30,7 @@ public class Client {
   }
 
   public Response post(final String url, final String body) {
-    return post(Request.builder().url(url).body(body).build());
+    return post(request(url).body(body).build());
   }
 
   public Response put(final Request request) {
@@ -38,7 +38,7 @@ public class Client {
   }
 
   public Response put(final String url, final String body) {
-    return put(Request.builder().url(url).body(body).build());
+    return put(request(url).body(body).build());
   }
 
   public Response get(final Request request) {
@@ -46,7 +46,7 @@ public class Client {
   }
 
   public Response get(final String url) {
-    return get(Request.builder().url(url).build());
+    return get(request(url).build());
   }
 
   public Response delete(final Request request) {
@@ -54,14 +54,24 @@ public class Client {
   }
 
   public Response delete(final String url) {
-    return delete(Request.builder().url(url).build());
+    return delete(request(url).build());
+  }
+
+  public Request.RequestBuilder request(final String url) {
+    if (baseUrl != null) {
+      return Request.builder().url(baseUrl + url);
+    }
+
+    return Request.builder().url(url);
   }
 
   public Response execute(final okhttp3.Request request) {
     try {
-      final okhttp3.Request requestWithBaseUrl = baseUrl != null ?
-          request.newBuilder().url(baseUrl + request.url().toString()).build() : request;
-      return new Response(okClient.newCall(requestWithBaseUrl).execute(), objectMapper);
+      if (baseUrl != null && !request.url().toString().startsWith(baseUrl)) {
+        throw new RuntimeException("Request url " + request.url().toString() + " does not match baseUrl "
+            + baseUrl + ". Consider using a plain OkHttpClient if this is intended.");
+      }
+      return new Response(okClient.newCall(request).execute(), objectMapper);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
