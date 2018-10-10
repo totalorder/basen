@@ -32,6 +32,7 @@ dependencies {
     compile 'com.google.guava:guava:23.5-jre'
     compile 'com.squareup.okhttp3:okhttp:3.11.0'
     compile 'se.deadlock:txman:0.0.1-SNAPSHOT'
+    compile 'se.deadlock:okok:0.0.1-SNAPSHOT'
 
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'

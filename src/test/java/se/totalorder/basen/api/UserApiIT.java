@@ -10,7 +10,7 @@ import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.TestUtil;
-import se.totalorder.lib.http.Client;
+import se.deadlock.okok.Client;
 import se.deadlock.txman.TxMan;
 
 import javax.sql.DataSource;
