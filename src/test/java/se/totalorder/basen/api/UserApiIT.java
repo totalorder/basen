@@ -11,7 +11,7 @@ import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
 import se.totalorder.basen.testutil.TestUtil;
 import se.totalorder.lib.http.Client;
-import se.totalorder.lib.tx.TxMan;
+import se.deadlock.txman.TxMan;
 
 import javax.sql.DataSource;
 

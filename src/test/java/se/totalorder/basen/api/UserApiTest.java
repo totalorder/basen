@@ -9,7 +9,7 @@ import se.deadlock.composed.Composed;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
-import se.totalorder.lib.tx.TxMan;
+import se.deadlock.txman.TxMan;
 
 import javax.sql.DataSource;
 import java.util.Arrays;

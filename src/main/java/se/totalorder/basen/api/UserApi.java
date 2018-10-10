@@ -2,7 +2,7 @@ package se.totalorder.basen.api;
 
 import java.util.List;
 import se.totalorder.basen.model.User;
-import se.totalorder.lib.tx.TxMan;
+import se.deadlock.txman.TxMan;
 
 public class UserApi {
 
