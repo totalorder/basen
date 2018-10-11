@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import se.deadlock.composed.Composed;
+import se.totalorder.basen.config.ClientConf;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
@@ -30,7 +31,7 @@ class UserApiIT {
 
   @BeforeAll
   static void beforeAll() {
-    client = new Client("http://localhost:" + app.externalPort(8080));
+    client = ClientConf.createClient("test").baseUrl("http://localhost:" + app.externalPort(8080)).build();
     final DataSource dataSource = new HikariDataSource(DatabaseConf.get("test", postgres.externalPort(5432)));
     TestUtil.migrateDatabase(dataSource);
     txMan = new TxMan(dataSource);
@@ -70,5 +71,14 @@ class UserApiIT {
 
     final User[] users = client.get("/user").json(User[].class);
     assertThat(users, is(new User[]{first, second}));
+  }
+
+  @Test
+  void proxy() {
+    final User created = client.post("/user/1", "asd").json(User.class);
+    assertThat(created, is(new User(1, "asd")));
+
+    final User found = client.get("/proxy-user/1").json(User.class);
+    assertThat(created, is(found));
   }
 }

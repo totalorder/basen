@@ -1,14 +1,17 @@
 package se.totalorder.basen.api;
 
 import java.util.List;
+import se.deadlock.okok.Client;
 import se.totalorder.basen.model.User;
 import se.deadlock.txman.TxMan;
 
 public class UserApi {
 
+  private final Client client;
   private final TxMan transactionManager;
 
-  public UserApi(final TxMan transactionManager) {
+  public UserApi(final Client client, final TxMan transactionManager) {
+    this.client = client;
     this.transactionManager = transactionManager;
   }
 
@@ -43,5 +46,9 @@ public class UserApi {
     return transactionManager.begin(tx ->
         tx.executeOne("DELETE FROM usr WHERE id = ? RETURNING *;", User.mapper, userId))
         .orElse(null);
+  }
+
+  public User proxyGet(final String userIdString) {
+    return client.get("/user/" + userIdString).json(User.class);
   }
 }
