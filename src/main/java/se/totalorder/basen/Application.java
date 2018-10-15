@@ -8,24 +8,33 @@ import io.javalin.Javalin;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.sql.DataSource;
+import se.deadlock.okok.Client;
 import se.totalorder.basen.api.UserApi;
+import se.totalorder.basen.config.ClientConf;
 import se.totalorder.basen.config.DatabaseConf;
 import se.deadlock.txman.TxMan;
+import se.totalorder.basen.util.IncomingHttpLogger;
 
 public class Application {
   public static void main(String[] args) {
     final String env = Optional.ofNullable(System.getenv("ENV")).orElse("dev");
     final DataSource dataSource = new HikariDataSource(DatabaseConf.get(env));
+    final Client.Builder clientBuilder = ClientConf.createClient(env);
     final TxMan transactionManager = new TxMan(dataSource);
-    final UserApi userApi = new UserApi(transactionManager);
+    final Client localhostClient = clientBuilder.baseUrl("http://localhost:8080").build();
+    final UserApi userApi = new UserApi(localhostClient, transactionManager);
+    final IncomingHttpLogger incomingHttpLogger = new IncomingHttpLogger();
 
     Javalin.create()
+        .before(incomingHttpLogger::before)
+        .requestLogger(incomingHttpLogger)
         .get("/", ctx -> ctx.result("Hello World"))
         .get("/user", json(ctx -> userApi.get()))
         .get("/user/:id", json(ctx -> userApi.get(ctx.pathParam("id"))))
         .post("/user/:id", json(ctx -> userApi.create(ctx.pathParam("id"), ctx.body())))
         .put("/user/:id", json(ctx -> userApi.put(ctx.pathParam("id"), ctx.body())))
         .delete("/user/:id", json(ctx -> userApi.delete(ctx.pathParam("id"))))
+        .get("/proxy-user/:id", json(ctx -> userApi.proxyGet(ctx.pathParam("id"))))
         .disableStartupBanner()
         .start(8080);
   }
