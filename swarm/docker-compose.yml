@@ -1,0 +1,18 @@
+version: '2.1'
+services:
+  master:
+    privileged: true
+    image: docker:stable-dind
+    container_name: master
+
+  worker1:
+    privileged: true
+    image: docker:stable-dind
+    container_name: worker1
+    command: --label nodename=worker1
+
+  worker2:
+    privileged: true
+    image: docker:stable-dind
+    container_name: worker2
+    command: --label nodename=worker2
