@@ -1,0 +1,52 @@
+version: '2'
+services:
+  etcd-master:
+    image: quay.io/coreos/etcd:latest
+    ports:
+      - 2379
+      - 2380
+    container_name: master
+    command: >
+      /usr/local/bin/etcd
+      --name master
+      --initial-advertise-peer-urls http://master:2380
+      --listen-peer-urls http://0.0.0.0:2380
+      --advertise-client-urls http://master:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker3:2380
+      --initial-cluster-state new
+      --initial-cluster-token secret-token
+
+  etcd-worker1:
+    image: quay.io/coreos/etcd:latest
+    ports:
+    - 2379
+    - 2380
+    container_name: worker1
+    command: >
+      /usr/local/bin/etcd
+      --name worker1
+      --initial-advertise-peer-urls http://worker1:2380
+      --listen-peer-urls http://0.0.0.0:2380
+      --advertise-client-urls http://worker1:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker3:2380
+      --initial-cluster-state new
+      --initial-cluster-token secret-token
+
+  etcd-worker2:
+    image: quay.io/coreos/etcd:latest
+    ports:
+    - 2379
+    - 2380
+    container_name: worker2
+    command: >
+      /usr/local/bin/etcd
+      --name worker2
+      --initial-advertise-peer-urls http://worker2:2380
+      --listen-peer-urls http://0.0.0.0:2380
+      --advertise-client-urls http://worker2:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker3:2380
+      --initial-cluster-state new
+      --initial-cluster-token secret-token
