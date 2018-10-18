@@ -4,6 +4,9 @@ services:
     privileged: true
     image: docker:stable-dind
     container_name: master
+    ports:
+      - 2376:2375
+    command: --label nodename=master
 
   worker1:
     privileged: true

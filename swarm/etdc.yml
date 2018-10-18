@@ -1,6 +1,6 @@
-version: '2'
+version: '3'
 services:
-  etcd-master:
+  master:
     image: quay.io/coreos/etcd:latest
     ports:
       - 2379
@@ -13,11 +13,19 @@ services:
       --listen-peer-urls http://0.0.0.0:2380
       --advertise-client-urls http://master:2379
       --listen-client-urls http://0.0.0.0:2379
-      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker3:2380
+      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker2:2380
       --initial-cluster-state new
-      --initial-cluster-token secret-token
+      --initial-cluster-token random-token
+    deploy:
+      placement:
+        constraints:
+        - engine.labels.nodename == master
+    networks:
+      default:
+        aliases:
+        - etcd
 
-  etcd-worker1:
+  worker1:
     image: quay.io/coreos/etcd:latest
     ports:
     - 2379
@@ -30,11 +38,19 @@ services:
       --listen-peer-urls http://0.0.0.0:2380
       --advertise-client-urls http://worker1:2379
       --listen-client-urls http://0.0.0.0:2379
-      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker3:2380
+      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker2:2380
       --initial-cluster-state new
-      --initial-cluster-token secret-token
+      --initial-cluster-token random-token
+    deploy:
+      placement:
+        constraints:
+        - engine.labels.nodename == worker1
+    networks:
+      default:
+        aliases:
+        - etcd
 
-  etcd-worker2:
+  worker2:
     image: quay.io/coreos/etcd:latest
     ports:
     - 2379
@@ -47,6 +63,54 @@ services:
       --listen-peer-urls http://0.0.0.0:2380
       --advertise-client-urls http://worker2:2379
       --listen-client-urls http://0.0.0.0:2379
-      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker3:2380
+      --initial-cluster master=http://master:2380,worker1=http://worker1:2380,worker2=http://worker2:2380
       --initial-cluster-state new
-      --initial-cluster-token secret-token
+      --initial-cluster-token random-token
+    deploy:
+      placement:
+        constraints:
+        - engine.labels.nodename == worker2
+    networks:
+      default:
+        aliases:
+        - etcd
+
+  node:
+    image: quay.io/coreos/etcd:latest
+    ports:
+    - 2379
+    - 2380
+    container_name: node
+    command: >
+      sh -c 'eval $$(etcdctl --endpoints http://etcd:2379 member add $$HOSTNAME http://$$HOSTNAME:2380 | grep ETCD_INITIAL_CLUSTER) &&
+      /usr/local/bin/etcd
+      --name $$HOSTNAME
+      --listen-peer-urls http://0.0.0.0:2380
+      --advertise-client-urls http://$$HOSTNAME:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --initial-cluster $$ETCD_INITIAL_CLUSTER
+      --initial-cluster-state existing
+      --initial-cluster-token random-token'
+    deploy:
+      placement:
+        constraints:
+        - engine.labels.nodename == master
+    networks:
+      default:
+        aliases:
+        - etcd
+
+  debugger:
+    image: quay.io/collectai/alpine-curl
+    container_name: alpine
+    command: watch date
+    deploy:
+      placement:
+        constraints:
+        - engine.labels.nodename == master
+    networks:
+    - default
+
+#networks:
+#  etcd:
+
