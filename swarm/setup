@@ -31,3 +31,9 @@ until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endp
 # Wait until etcd-cluster is healthy
 until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
 echo "SUCCESS: etcd listening on http://localhost:2379"
+
+# Deploy patroni service
+./master stack deploy --compose-file patroni.yml patroni
+
+# Tail logs of patroni
+until ./master service logs -f patroni_node ; do echo "Waiting for patroni service..." && sleep 2; done
