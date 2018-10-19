@@ -1,23 +1,33 @@
 #!/usr/bin/env bash
+# (Re-)create docker swarm
 docker-compose -f swarmhost.yml down ; docker-compose -f swarmhost.yml up -d
+
+# Create join command for workers
 JOIN_CMD=$(./remote master docker swarm init --advertise-addr $(docker inspect master |  jq -r '.[].NetworkSettings.Networks[].IPAddress') | grep 'docker swarm join' | sed s/To\ add.*//)
 
+# Join workers into swarm
 ./remote worker1 $JOIN_CMD
 ./remote worker2 $JOIN_CMD
 
+# Create etcd network
+./master network create --attachable --driver overlay etcd
+
+# Deploy etcd service
 ./master stack deploy --compose-file etdc.yml etcd
-#./master service logs -f etcd_master
-#./master stack deploy --compose-file app.yml app
-#./master docker
-#./remote master docker service create --constraint engine.labels.nodename==worker1 --replicas 1 --name helloworld alpine ping docker.com
 
-#./remote master docker service ls
-#./remote master docker service ps helloworld
-#./remote master docker service scale helloworld=2
-#./remote master docker service ps helloworld
-#./remote master docker service rm helloworld
+# Wait until etcd_node service is healthy, and etcd-cluster is healthy
+./master pull quay.io/coreos/etcd:latest > /dev/null
+until [ ! "$(./master service ps --format '{{.CurrentState}}' etcd_node | grep -v Running)" ] ; do echo "Waiting for etc_node healthy..." && sleep 2; done
+until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
 
-#./remote master service create --replicas 2 --name redis --update-delay 5s redis:3.0.6
-#./remote master docker service inspect --pretty redis
-#./remote master docker service update --image redis:3.0.7 redis
-#./remote master docker service inspect --pretty redis
+# Remove master peer from etcd-cluster
+MASTER_ID=$(./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 member list | grep master | cut -d ':' -f 1)
+echo "Removing master with id $MASTER_ID"
+until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 member remove $MASTER_ID ; do echo "Trying to remove master..." && sleep 2; done
+
+# Remove master service
+./master service rm etcd_master && echo "master swarm service removed"
+
+# Wait until etcd-cluster is healthy
+until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
+echo "SUCCESS: etcd listening on http://localhost:2379"
