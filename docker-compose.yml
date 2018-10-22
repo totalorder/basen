@@ -2,7 +2,7 @@ version: '2.1'
 services:
   app:
     environment:
-      ENV: integration
+      ENVIRONMENTS: integration
     image: basen
     ports:
     - 8080
@@ -14,4 +14,4 @@ services:
   postgres:
     build: ./dependencies/postgres
     ports:
-      - 5432
+      - 5432:5432

@@ -1,26 +1,38 @@
 package se.totalorder.basen;
 
 
+import com.typesafe.config.Config;
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.javalin.Context;
 import io.javalin.Handler;
 import io.javalin.Javalin;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.function.Function;
 import javax.sql.DataSource;
+
+import lombok.extern.slf4j.Slf4j;
 import se.deadlock.okok.Client;
 import se.totalorder.basen.api.UserApi;
+import se.totalorder.basen.confer.Confer;
 import se.totalorder.basen.config.ClientConf;
 import se.totalorder.basen.config.DatabaseConf;
 import se.deadlock.txman.TxMan;
 import se.totalorder.basen.util.IncomingHttpLogger;
 
+@Slf4j
 public class Application {
   public static void main(String[] args) {
-    final String env = Optional.ofNullable(System.getenv("ENV")).orElse("dev");
-    final DataSource dataSource = new HikariDataSource(DatabaseConf.get(env));
-    final Client.Builder clientBuilder = ClientConf.createClient(env);
+    final String envString = System.getenv("ENVIRONMENTS");
+    final List<String> envs = envString != null ? Arrays.asList(envString.split(",")) : Collections.emptyList();
+    log.info("Environments: " + envs);
+    final Config config = Confer.builder().envs(envs).build();
+
+    final DataSource dataSource = new HikariDataSource(DatabaseConf.get(config));
     final TxMan transactionManager = new TxMan(dataSource);
+
+    final Client.Builder clientBuilder = ClientConf.createClient();
     final Client localhostClient = clientBuilder.baseUrl("http://localhost:8080").build();
     final UserApi userApi = new UserApi(localhostClient, transactionManager);
     final IncomingHttpLogger incomingHttpLogger = new IncomingHttpLogger();

@@ -1,0 +1,6 @@
+db:
+  hostname: localhost
+  name: basen
+  username: basen
+  password: basen
+  port: 5432

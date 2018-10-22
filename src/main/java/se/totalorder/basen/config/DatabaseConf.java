@@ -1,24 +1,19 @@
 package se.totalorder.basen.config;
 
+import com.typesafe.config.Config;
 import com.zaxxer.hikari.HikariConfig;
 
 public class DatabaseConf {
-  public static HikariConfig get(final String env) {
-    return get(env, 5432);
-  }
-
-  public static HikariConfig get(final String env, final int port) {
-
-    final String host = env.equals("integration") ? "postgres" : "localhost";
-
-    final HikariConfig config = new HikariConfig();
-    config.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/basen");
-    config.setAutoCommit(false);
-    config.setUsername("basen");
-    config.setPassword("basen");
-    config.setMaximumPoolSize(10);
-    config.addDataSourceProperty("cachePrepStmts", "true");
-    config.addDataSourceProperty("prepStmtCacheSize", "250");
-    return config;
+  public static HikariConfig get(final Config config) {
+    final HikariConfig hikariConfig = new HikariConfig();
+    hikariConfig.setJdbcUrl("jdbc:postgresql://" + config.getString("db.hostname") + ":"
+        + config.getInt("db.port") + "/" + config.getString("db.name"));
+    hikariConfig.setAutoCommit(false);
+    hikariConfig.setUsername(config.getString("db.username"));
+    hikariConfig.setPassword(config.getString("db.password"));
+    hikariConfig.setMaximumPoolSize(10);
+    hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
+    hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+    return hikariConfig;
   }
 }

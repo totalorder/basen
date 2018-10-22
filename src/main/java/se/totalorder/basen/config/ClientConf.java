@@ -10,7 +10,7 @@ public class ClientConf {
   private static OutgoingHttpLogger loggingInterceptor = new OutgoingHttpLogger(
       log::info, OutgoingHttpLogger.Level.BODY);
 
-  public static Client.Builder createClient(final String env) {
+  public static Client.Builder createClient() {
     return new Client.Builder().addInterceptor(loggingInterceptor);
   }
 }
