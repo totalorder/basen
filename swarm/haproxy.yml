@@ -1,0 +1,21 @@
+version: '3.3'
+services:
+  node:
+    image: 127.0.0.1:5000/haproxy
+    build: haproxy
+    environment:
+      DNS_NAME: postgres
+    ports:
+      - 7000:7000
+      - 5432:5432
+      - 5433:5433
+    deploy:
+      placement:
+        constraints:
+        - engine.labels.nodename == master
+    networks:
+      - etcd
+
+networks:
+  etcd:
+    external: true

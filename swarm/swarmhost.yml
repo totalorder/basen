@@ -1,0 +1,26 @@
+version: '2.1'
+services:
+  master:
+    privileged: true
+    image: docker:stable-dind
+    container_name: master
+    ports:
+      - 2379:2379
+      - 2376:2375
+      - 5432:5432
+      - 5433:5433
+      - 5000:5000
+      - 7000:7000
+    command: --label nodename=master
+
+  worker1:
+    privileged: true
+    image: docker:stable-dind
+    container_name: worker1
+    command: --label nodename=worker1
+
+  worker2:
+    privileged: true
+    image: docker:stable-dind
+    container_name: worker2
+    command: --label nodename=worker2

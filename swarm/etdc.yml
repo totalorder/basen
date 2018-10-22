@@ -1,0 +1,54 @@
+version: '3.3'
+services:
+  master:
+    image: quay.io/coreos/etcd:latest
+    command: >
+      /usr/local/bin/etcd
+      --name master
+      --initial-advertise-peer-urls http://master:2380
+      --listen-peer-urls http://0.0.0.0:2380
+      --advertise-client-urls http://master:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --initial-cluster master=http://master:2380
+      --initial-cluster-state new
+      --initial-cluster-token random-token
+    deploy:
+      placement:
+        constraints:
+        - engine.labels.nodename == master
+    networks:
+      etcd:
+        aliases:
+        - etcd
+
+  node:
+    image: quay.io/coreos/etcd:latest
+    ports:
+    - 2379:2379
+    - 2380
+    command: >
+      sh -c 'until etcdctl --endpoints http://etcd:2379 cluster-health; do echo "Waiting for healthy cluster..." && sleep 1; done &&
+      until etcdctl --endpoints http://etcd:2379 member list; do echo "Waiting for member list..." && sleep 1; done &&
+      until RES="$$(etcdctl --endpoints http://etcd:2379 member add $$HOSTNAME http://$$HOSTNAME:2380)" && echo -e "$$RES" && eval $$(echo -e "$$RES" | grep ETCD_) && [ -n "$$ETCD_INITIAL_CLUSTER" ] ; do echo "Waiting for add member success..." && sleep 1; done &&
+      echo "Starting node $$ETCD_NAME with initial cluster: $$ETCD_INITIAL_CLUSTER" &&
+      /usr/local/bin/etcd
+      --name $$ETCD_NAME
+      --initial-cluster $$ETCD_INITIAL_CLUSTER
+      --listen-peer-urls http://0.0.0.0:2380
+      --advertise-client-urls http://$$HOSTNAME:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --initial-cluster-token random-token
+      --initial-cluster-state existing'
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+    networks:
+      etcd:
+        aliases:
+        - etcd
+
+networks:
+  etcd:
+    external: true

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+./start_swarm
+./start_etcd
+./start_postgres
+./start_haproxy

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Remove existing
+./master stack remove etcd
+./master network rm etcd
+until [ -z "$(./master network ls | grep etcd)" ]; do echo "Waiting for etcd network removal..." && sleep 2; done
+
+# Create etcd network
+./master network create --attachable --driver overlay etcd
+
+# Deploy etcd service
+./master stack deploy --compose-file etdc.yml etcd
+
+# Wait until etcd_node service is healthy, and etcd-cluster is healthy
+./master pull quay.io/coreos/etcd:latest > /dev/null
+until [ ! "$(./master service ps --format '{{.CurrentState}}' etcd_node | grep -v Running)" ] ; do echo "Waiting for etc_node healthy..." && sleep 2; done
+until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
+
+# Remove master peer from etcd-cluster
+MASTER_ID=$(./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 member list | grep master | cut -d ':' -f 1)
+echo "Removing master with id $MASTER_ID"
+until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 member remove $MASTER_ID ; do echo "Trying to remove master..." && sleep 2; done
+
+# Remove master service
+./master service rm etcd_master && echo "master swarm service removed"
+
+# Wait until etcd-cluster is healthy
+until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
+echo "SUCCESS: etcd listening on http://localhost:2379"

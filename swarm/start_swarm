@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Remove existing
+docker-compose -f swarmhost.yml down
+
+# Start dind-nodes
+docker-compose -f swarmhost.yml up -d
+
+# Create join command for workers
+JOIN_CMD=$(./remote master docker swarm init --advertise-addr $(docker inspect master |  jq -r '.[].NetworkSettings.Networks[].IPAddress') | grep 'docker swarm join' | sed s/To\ add.*//)
+
+# Join workers into swarm
+./remote worker1 $JOIN_CMD
+./remote worker2 $JOIN_CMD
+
+# Spin up docker registry
+./master service create --name registry --publish 5000:5000 registry:2
