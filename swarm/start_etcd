@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
-# (Re-)create docker swarm
-docker-compose -f swarmhost.yml down ; docker-compose -f swarmhost.yml up -d
-
-# Create join command for workers
-JOIN_CMD=$(./remote master docker swarm init --advertise-addr $(docker inspect master |  jq -r '.[].NetworkSettings.Networks[].IPAddress') | grep 'docker swarm join' | sed s/To\ add.*//)
-
-# Join workers into swarm
-./remote worker1 $JOIN_CMD
-./remote worker2 $JOIN_CMD
+# Remove existing
+./master stack remove etcd
+./master network rm etcd
+until [ -z "$(./master network ls | grep etcd)" ]; do echo "Waiting for etcd network removal..." && sleep 2; done
 
 # Create etcd network
 ./master network create --attachable --driver overlay etcd
@@ -31,9 +26,3 @@ until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endp
 # Wait until etcd-cluster is healthy
 until ./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
 echo "SUCCESS: etcd listening on http://localhost:2379"
-
-# Deploy patroni service
-./master stack deploy --compose-file patroni.yml patroni
-
-# Tail logs of patroni
-until ./master service logs -f patroni_node ; do echo "Waiting for patroni service..." && sleep 2; done

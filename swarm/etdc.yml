@@ -1,11 +1,7 @@
-version: '3'
+version: '3.3'
 services:
   master:
     image: quay.io/coreos/etcd:latest
-    ports:
-      - 2379
-      - 2380
-    container_name: master
     command: >
       /usr/local/bin/etcd
       --name master
@@ -30,7 +26,6 @@ services:
     ports:
     - 2379:2379
     - 2380
-    container_name: node
     command: >
       sh -c 'until etcdctl --endpoints http://etcd:2379 cluster-health; do echo "Waiting for healthy cluster..." && sleep 1; done &&
       until etcdctl --endpoints http://etcd:2379 member list; do echo "Waiting for member list..." && sleep 1; done &&
@@ -53,17 +48,6 @@ services:
       etcd:
         aliases:
         - etcd
-
-  debugger:
-    image: quay.io/collectai/alpine-curl
-    container_name: alpine
-    command: watch date
-    deploy:
-      placement:
-        constraints:
-        - engine.labels.nodename == master
-    networks:
-    - etcd
 
 networks:
   etcd:

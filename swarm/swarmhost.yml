@@ -8,6 +8,9 @@ services:
       - 2379:2379
       - 2376:2375
       - 5432:5432
+      - 5433:5433
+      - 5000:5000
+      - 7000:7000
     command: --label nodename=master
 
   worker1:
