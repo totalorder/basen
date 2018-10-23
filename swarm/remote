@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-REMOTE=$1
-shift
-docker run --rm -e DOCKER_HOST=tcp://$REMOTE:2375 --network swarm_default --link $REMOTE:docker docker:stable $@

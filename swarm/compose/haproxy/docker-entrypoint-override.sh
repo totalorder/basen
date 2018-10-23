@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-confgen.sh &
+/confgen.sh &
 /docker-entrypoint.sh $@

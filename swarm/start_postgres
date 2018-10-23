@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Remove existing
-./master stack remove postgres
-#until [ $(./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 ls /service/batman) ]; do echo "Waiting for postgres network removal..." && sleep 2; done
-until [ -z "$(./master network ls | grep postgres_default)" ]; do echo "Waiting for postgres network removal..." && sleep 2; done
-./master run --network etcd --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 rm -r /service/batman
-
-# Deploy
-./master stack deploy --compose-file postgres.yml postgres

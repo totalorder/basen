@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+# Remove existing
+in_swarm stack remove postgres
+until [ -z "$(in_swarm network ls | grep postgres_default)" ]; do echo "Waiting for postgres network removal..." && sleep 2; done
+in_swarm run --network swarmnet --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 rm -r /service/batman
+
+# Deploy
+in_swarm stack deploy --compose-file compose/postgres.yml postgres

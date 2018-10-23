@@ -1,23 +1,19 @@
 version: '3.3'
 services:
-  master:
+  bootstrap:
     image: quay.io/coreos/etcd:latest
     command: >
-      /usr/local/bin/etcd
-      --name master
-      --initial-advertise-peer-urls http://master:2380
+      sh -c '/usr/local/bin/etcd
+      --name bootstrap
+      --initial-advertise-peer-urls http://$$HOSTNAME:2380
       --listen-peer-urls http://0.0.0.0:2380
-      --advertise-client-urls http://master:2379
+      --advertise-client-urls http://$$HOSTNAME:2379
       --listen-client-urls http://0.0.0.0:2379
-      --initial-cluster master=http://master:2380
+      --initial-cluster bootstrap=http://$$HOSTNAME:2380
       --initial-cluster-state new
-      --initial-cluster-token random-token
-    deploy:
-      placement:
-        constraints:
-        - engine.labels.nodename == master
+      --initial-cluster-token random-token'
     networks:
-      etcd:
+      swarmnet:
         aliases:
         - etcd
 
@@ -45,10 +41,10 @@ services:
         parallelism: 1
         delay: 10s
     networks:
-      etcd:
+      swarmnet:
         aliases:
         - etcd
 
 networks:
-  etcd:
+  swarmnet:
     external: true

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-./start_swarm
-./start_etcd
-./start_postgres
-./start_haproxy
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+./start-swarm
+./start-etcd
+./start-postgres
+./start-haproxy

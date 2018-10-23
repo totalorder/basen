@@ -10,12 +10,13 @@ services:
       - 5432:5432
       - 5433:5433
     deploy:
-      placement:
-        constraints:
-        - engine.labels.nodename == master
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
     networks:
-      - etcd
+      - swarmnet
 
 networks:
-  etcd:
+  swarmnet:
     external: true

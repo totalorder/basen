@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-# Remove existing
-./master stack remove haproxy
-docker-compose -f haproxy.yml build && docker-compose -f haproxy.yml push
-until [ -z "$(./master network ls | grep haproxy_default)" ]; do echo "Waiting for haproxy network removal..." && sleep 2; done
-
-# Deploy
-./master stack deploy --compose-file haproxy.yml haproxy

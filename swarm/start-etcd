@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+# Remove existing
+in_swarm stack remove etcd
+
+# Deploy etcd service
+in_swarm stack deploy --compose-file compose/etdc.yml etcd
+
+NODE=`random_node`
+on_node ${NODE} pull quay.io/coreos/etcd:latest > /dev/null
+
+function etcdctl() {
+    on_node ${NODE} run --network swarmnet --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 $@
+}
+
+# Wait until etcd_node service is healthy, and etcd-cluster is healthy
+until [ ! "$(on_node ${NODE} service ps --format '{{.CurrentState}}' etcd_node | grep -v Running)" ] ; do echo "Waiting for etc_node healthy..." && sleep 2; done
+until etcdctl cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
+
+# Remove bootstrap peer from etcd-cluster
+BOOTSTRAP_ID=$(etcdctl member list | grep bootstrap | cut -d ':' -f 1)
+echo "Removing bootstrap with id $BOOTSTRAP_ID"
+until etcdctl member remove ${BOOTSTRAP_ID} ; do echo "Trying to remove bootstrap..." && sleep 2; done
+
+# Remove boostrap service
+in_swarm service rm etcd_bootstrap && echo "bootstrap swarm service removed"
+
+# Wait until etcd-cluster is healthy
+until etcdctl cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
+echo "SUCCESS: etcd listening on http://localhost:2379"

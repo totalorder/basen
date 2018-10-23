@@ -10,10 +10,10 @@ services:
         delay: 10s
       endpoint_mode: dnsrr
     networks:
-      etcd:
+      swarmnet:
         aliases:
         - postgres
 
 networks:
-  etcd:
+  swarmnet:
     external: true

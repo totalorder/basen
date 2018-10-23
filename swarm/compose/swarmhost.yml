@@ -1,0 +1,30 @@
+version: '3.3'
+services:
+  node1:
+    privileged: true
+    image: docker:stable-dind
+    ports:
+    - 2376:2375
+    - 2379:2379
+    - 5432:5432
+    - 5433:5433
+    - 5000:5000
+    - 7000:7000
+    command: --label nodename=node1
+    container_name: node1
+
+  node2:
+    privileged: true
+    image: docker:stable-dind
+    command: --label nodename=node2
+    ports:
+    - 2377:2375
+    container_name: node2
+
+  node3:
+    privileged: true
+    image: docker:stable-dind
+    command: --label nodename=node3
+    ports:
+    - 2378:2375
+    container_name: node3

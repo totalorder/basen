@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+# Remove existing
+in_swarm stack remove haproxy
+until [ -z "$(in_swarm network ls | grep haproxy_default)" ]; do echo "Waiting for haproxy network removal..." && sleep 2; done
+
+# Push image to registry
+docker-compose -f compose/haproxy.yml build && docker-compose -f compose/haproxy.yml push
+
+# Deploy
+in_swarm stack deploy --compose-file compose/haproxy.yml haproxy
