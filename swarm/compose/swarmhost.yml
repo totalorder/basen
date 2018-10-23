@@ -10,6 +10,7 @@ services:
     - 5433:5433
     - 5000:5000
     - 7000:7000
+    - 8000:8000
     command: --label nodename=node1
     container_name: node1
 

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+# Remove existing
+in_swarm stack remove app
+until [ -z "$(in_swarm network ls | grep app_default)" ]; do echo "Waiting for app network removal..." && sleep 2; done
+
+# Push image to registry
+docker tag basen 127.0.0.1:5000/basen && docker push 127.0.0.1:5000/basen
+
+# Deploy
+in_swarm stack deploy --compose-file compose/app.yml app

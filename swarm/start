@@ -6,3 +6,4 @@ source include/common.sh
 ./start-etcd
 ./start-postgres
 ./start-haproxy
+./start-app

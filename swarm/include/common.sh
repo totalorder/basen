@@ -8,7 +8,7 @@ function get_nodes() {
 function on_node() {
     NODE="$1"
     shift
-    (DOCKER_HOST=tcp://${NODE} docker $@)
+    (DOCKER_HOST=tcp://${NODE} docker "$@")
 }
 
 function random_node() {
