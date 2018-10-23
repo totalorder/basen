@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 
+import com.typesafe.config.Config;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Arrays;
 import java.util.List;
@@ -13,21 +14,25 @@ import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import se.deadlock.composed.Composed;
 import se.deadlock.okok.Client;
 import se.deadlock.txman.TxMan;
 import se.totalorder.basen.config.DatabaseConf;
 import se.totalorder.basen.model.User;
 import se.totalorder.basen.testutil.ComposedService;
+import se.totalorder.basen.testutil.TestUtil;
 
 class UserApiTest {
+  @RegisterExtension
   static Composed postgres = ComposedService.postgres;
   UserApi userApi;
   static DataSource dataSource;
 
   @BeforeAll
   static void setUpClass() {
-    dataSource = new HikariDataSource(DatabaseConf.get("test", postgres.externalPort(5432)));
+    final Config config = TestUtil.testConfigWithDbPort(postgres.externalPort(5432));
+    dataSource = new HikariDataSource(DatabaseConf.get(config));
     final Flyway flyway = new Flyway();
     flyway.setDataSource(dataSource);
     flyway.migrate();

@@ -8,12 +8,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import lombok.Builder;
-import lombok.Singular;
-
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import lombok.Builder;
+import lombok.Singular;
 
 public class Confer {
   @Builder
@@ -35,7 +34,11 @@ public class Confer {
       JsonNode jsonNode = objectMapper.readTree(baseFile);
       for (final String env : envs) {
         final URL envFile = Resources.getResource(directory + name + "-" + env + extension);
-        jsonNode = objectMapper.readerForUpdating(jsonNode).readValue(envFile);
+        final String envFileString = Resources.toString(envFile, StandardCharsets.UTF_8);
+        if (envFileString.trim().isEmpty()) {
+          continue;
+        }
+        jsonNode = objectMapper.readerForUpdating(jsonNode).readValue(envFileString);
       }
       final String jsonString = new ObjectMapper().writeValueAsString(jsonNode);
       return ConfigFactory.parseString(jsonString);

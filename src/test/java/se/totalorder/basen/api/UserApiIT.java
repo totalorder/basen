@@ -1,5 +1,6 @@
 package se.totalorder.basen.api;
 
+import com.typesafe.config.Config;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +32,9 @@ class UserApiIT {
 
   @BeforeAll
   static void beforeAll() {
-    client = ClientConf.createClient("test").baseUrl("http://localhost:" + app.externalPort(8080)).build();
-    final DataSource dataSource = new HikariDataSource(DatabaseConf.get("test", postgres.externalPort(5432)));
+    final Config config = TestUtil.testConfigWithDbPort(postgres.externalPort(5432));
+    client = ClientConf.createClient().baseUrl("http://localhost:" + app.externalPort(8080)).build();
+    final DataSource dataSource = new HikariDataSource(DatabaseConf.get(config));
     TestUtil.migrateDatabase(dataSource);
     txMan = new TxMan(dataSource);
   }

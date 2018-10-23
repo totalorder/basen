@@ -2,7 +2,6 @@ package se.totalorder.basen;
 
 
 import com.typesafe.config.Config;
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.javalin.Context;
 import io.javalin.Handler;
