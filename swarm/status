@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+NODES=(`get_nodes`)
+echo "### NODES ###"
+for NODE in ${NODES[@]}; do
+    echo "=== $NODE ==="
+    on_node ${NODE} node ps 2> /dev/null | awk '{ print $6 "\t" $2 }' | grep -v "tinytools"
+    echo "----$(printf %${#NODE}s | tr " " "-")----"
+done
+
+echo ""
+echo "### ETCD ###"
+if [[ "$(curl -w '%{http_code}' -s http://localhost:2379/health --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:2379 running"
+else
+    echo "http://localhost:2379 down"
+fi
+echo "------------"
+
+
+echo ""
+echo "### POSTGRES ###"
+for TASK in $(tinytools dig +short postgres 2> /dev/null | sort); do
+    TASK=$(echo ${TASK} | sed s/[^0-9\.]//g)
+    JSON=$(tinytools curl http://${TASK}:8008 2> /dev/null)
+    echo "$TASK $(echo ${JSON} | jq -r '.state') $(echo ${JSON} | jq -r '.role') "
+done
+echo "----------------"
+
+echo ""
+echo "### HAPROXY ###"
+if [[ "$(curl -w '%{http_code}' -s http://localhost:7000 --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:7000 running"
+else
+    echo "http://localhost:7000 down"
+fi
+echo "---------------"
+
+
+echo ""
+echo "### APP ###"
+if [[ "$(curl -w '%{http_code}' -s http://localhost:8000/user --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:8000 running"
+else
+    echo "http://localhost:8000 down"
+fi
+echo "-----------"

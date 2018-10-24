@@ -17,5 +17,10 @@ function random_node() {
 
 function in_swarm() {
     NODE=`random_node`
-    on_node ${NODE} ${@}
+    on_node ${NODE} "$@"
+}
+
+function tinytools() {
+    NODE=`random_node`
+    on_node ${NODE} exec -it $(on_node ${NODE} ps -q --filter name=tinytools) "$@"
 }

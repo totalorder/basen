@@ -36,3 +36,5 @@ in_swarm service create --name registry --publish 5000:5000 registry:2
 
 # Create network
 in_swarm network create --attachable --driver overlay swarmnet
+
+in_swarm service create --network swarmnet --mode global --name tinytools giantswarm/tiny-tools sh -c 'while true; do sleep 60; done'

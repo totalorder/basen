@@ -6,7 +6,6 @@ source include/common.sh
 in_swarm stack remove postgres
 until [[ ! $(in_swarm stack ps postgres -q) ]]; do echo "Waiting for postgres stack removal..." && sleep 2; done
 
-until [ -z "$(in_swarm network ls | grep postgres_default)" ]; do echo "Waiting for postgres network removal..." && sleep 2; done
 in_swarm run --network swarmnet --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 rm -r /service/batman
 
 # Push image to registry
@@ -26,6 +25,8 @@ until etcdctl get /service/batman/leader ; do echo "Waiting for postgres leader 
 LEADER_ID=$(etcdctl get /service/batman/leader)
 LEADER_HOST=$(etcdctl get /service/batman/members/${LEADER_ID} | cut -d '/' -f 6)
 IFS=: read LEADER_IP LEADER_PORT <<< "${LEADER_HOST}"
+# TODO: Use jq to find correct port
+LEADER_PORT=5432
 echo "Postgres leader elected: $LEADER_IP:$LEADER_PORT"
 
 function psql_execute() {

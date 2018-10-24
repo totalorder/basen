@@ -4,6 +4,7 @@ source include/common.sh
 
 # Remove existing
 in_swarm stack remove etcd
+until [[ ! $(in_swarm stack ps etcd -q) ]]; do echo "Waiting for etcd stack removal..." && sleep 2; done
 
 # Deploy etcd service
 in_swarm stack deploy --compose-file compose/etdc.yml etcd
