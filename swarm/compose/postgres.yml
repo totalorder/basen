@@ -1,8 +1,10 @@
 version: '3.3'
 services:
   node:
-    image: registry.opensource.zalan.do/acid/patroni:1.0-SNAPSHOT
-    command: --etcd etcd:2379
+    image: 127.0.0.1:5000/patroni
+    build: patroni/
+    environment:
+      PATRONI_ETCD_URL: http://etcd:2379
     deploy:
       replicas: 3
       update_config:

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")/.." || exit
 
 function get_nodes() {
     cat nodelist.txt
