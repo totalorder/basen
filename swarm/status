@@ -2,11 +2,21 @@
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
 source include/common.sh
 
-NODES=(`get_nodes`)
+CONTAINER_IDS=$(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps --filter state=up -q)
 echo "### NODES ###"
-for NODE in ${NODES[@]}; do
-    echo "=== $NODE ==="
-    on_node ${NODE} node ps 2> /dev/null | awk '{ print $6 "\t" $2 }' | grep -v "tinytools"
+for CONTAINER_ID in ${CONTAINER_IDS}; do
+    INSPECT=$(docker inspect ${CONTAINER_ID})
+    STATUS=$(echo ${INSPECT} | jq -r '.[].State.Status')
+
+    if [ ${STATUS} != "running" ]; then
+        NODE="localhost:????"
+        echo "=== $NODE ==="
+        echo "$STATUS"
+    else
+        NODE="localhost:$(echo ${INSPECT} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')"
+        echo "=== $NODE ==="
+        on_node ${NODE} node ps 2> /dev/null | grep -v "tinytools" | awk '{ print $6 "\t" $2 }'
+    fi
     echo "----$(printf %${#NODE}s | tr " " "-")----"
 done
 

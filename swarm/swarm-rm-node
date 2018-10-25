@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+
+# Populate NODES
+source include/common.sh
+
+CONTAINER_ID=$(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | head -n 1)
+docker rm -f ${CONTAINER_ID}

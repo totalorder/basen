@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+
+# Populate NODES
+source include/common.sh
+
+NODE_PORT=$(docker inspect $(docker-compose -f compose/swarmhost.yml ps -q | head -n 1) | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')
+NODE="localhost:$NODE_PORT"
+NAME="node-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13)"
+
+# Create join command
+JOIN_CMD=$(on_node ${NODE} swarm join-token manager | grep 'docker swarm join' | sed s/To\ add.*// | sed s/docker\ //)
+
+CONTAINER_NAME=$(docker-compose -f compose/swarmhost-node.yml run --service-ports -d node)
+CONTAINER_ID=$(docker ps -q --filter name=${CONTAINER_NAME})
+
+NEW_NODE_PORT=$(docker inspect ${CONTAINER_ID} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')
+NEW_NODE="localhost:$NEW_NODE_PORT"
+
+on_node ${NEW_NODE} ${JOIN_CMD}

@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  node:
+    privileged: true
+    image: docker:stable-dind
+    ports:
+    - 2375
