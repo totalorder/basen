@@ -34,17 +34,4 @@ done
 # Create network
 in_swarm network create --attachable --driver overlay swarmnet
 
-# Spin up docker registry
-#in_swarm service create  --network swarmnet --name bootstrap_registry --publish 5000:5000 registry:2
-#
-#docker-compose -f compose/registry.yml build && docker-compose -f compose/registry.yml push
-#
-#in_swarm stack deploy --compose-file compose/registry.yml registry
-#in_swarm service update --publish-rm 5000 bootstrap_registry
-#
-##in_swarm service update  registry_node
-#in_swarm service update --endpoint-mode dnsrr --publish-add '5000:5000' registry_node
-#in_swarm service rm bootstrap_registry
-#docker-compose -f compose/registry.yml build && docker-compose -f compose/registry.yml push
-
-#in_swarm service create --network swarmnet --mode global --name tinytools giantswarm/tiny-tools sh -c 'while true; do sleep 60; done'
+in_swarm service create --network swarmnet --mode global --name tinytools giantswarm/tiny-tools sh -c 'while true; do sleep 60; done'

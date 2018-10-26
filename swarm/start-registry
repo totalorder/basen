@@ -7,18 +7,12 @@ in_swarm stack rm registry_replicator
 until [[ ! $(in_swarm stack ps registry -q) ]]; do echo "Waiting for registry stack removal..." && sleep 2; done
 until [[ ! $(in_swarm stack ps registry_replicator -q) ]]; do echo "Waiting for registry_replicator stack removal..." && sleep 2; done
 
-# Spin up docker registry
-#in_swarm service create --name registry --network swarmnet --publish 5000:5000 registry:2
-
-#docker-compose -f compose/registry.yml build && docker-compose -f compose/registry.yml push
-#
 NODES=(`get_nodes`)
 for NODE in ${NODES[@]}; do
     on_node ${NODE} rmi -f $(on_node ${NODE} images -q)
     DOCKER_HOST=tcp://${NODE} docker-compose -f compose/registry.yml build node
 done
 
-#in_swarm service create --network swarmnet --name registry_bootstrap registry:5000/replicated-registry
 in_swarm stack deploy --compose-file compose/registry.yml registry
 
 until [[ "$(curl -w '%{http_code}' -s http://localhost:5000/v2/_catalog --output /dev/null)" == "200" ]]; do echo "Waiting for registry start..." && sleep 2; done
@@ -27,13 +21,5 @@ docker-compose -f compose/registry.yml build && docker-compose -f compose/regist
 docker-compose -f compose/registry-replicator.yml build && docker-compose -f compose/registry-replicator.yml push
 
 in_swarm stack deploy --compose-file compose/registry-replicator.yml registry_replicator
-#DOCKER_HOST=tcp://${NODE} docker-compose -f compose/registry.yml build && DOCKER_HOST=tcp://${NODE} docker-compose -f compose/registry.yml push
 
-#
-#in_swarm service update --publish-rm 5000 registry_bootstrap
-#in_swarm service rm registry_bootstrap
-
-#in_swarm service update  registry_node
-#in_swarm service update --publish-add '5000:5000' registry_node
-#in_swarm service rm registry_bootstrap
-#docker-compose -f compose/registry.yml build && docker-compose -f compose/registry.yml push
+echo "SUCCESS: registry listening on http://localhost:5000"

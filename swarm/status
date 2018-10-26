@@ -15,7 +15,7 @@ for CONTAINER_ID in ${CONTAINER_IDS}; do
     else
         NODE="localhost:$(echo ${INSPECT} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')"
         echo "=== $NODE ==="
-        timeout 2 echo "$(on_node ${NODE} node ps 2> /dev/null | grep -v "tinytools" | awk '{ print $6 "\t" $2 }')"
+        timeout 2 echo "$(on_node ${NODE} node ps 2> /dev/null | grep -v "tinytools" | grep -v "Shutdown" | awk '{ print $6 "\t" $2 }')"
     fi
     echo "----$(printf %${#NODE}s | tr " " "-")----"
 done
@@ -34,38 +34,45 @@ echo "----------------"
 
 echo ""
 echo "### ETCD ###"
-if [[ "$(curl -w '%{http_code}' -s http://localhost:2379/health --output /dev/null)" == "200" ]]; then
-    echo "http://localhost:2379 running"
+ETCD_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["2379/tcp"][].HostPort')
+if [[ "$(curl -w '%{http_code}' -s http://localhost:${ETCD_PORT}/health --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${ETCD_PORT} running"
 else
-    echo "http://localhost:2379 down"
+    echo "http://localhost:${ETCD_PORT} down"
 fi
 echo "------------"
 
 
 echo ""
 echo "### POSTGRES ###"
+POSTGRES_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5432/tcp"][].HostPort')
+POSTGRES_READONLY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5433/tcp"][].HostPort')
 for TASK in $(tinytools dig +short postgres 2> /dev/null | sort); do
     TASK=$(echo ${TASK} | sed s/[^0-9\.]//g)
     JSON=$(tinytools curl http://${TASK}:8008 2> /dev/null)
-    echo "$TASK $(echo ${JSON} | jq -r '.state') $(echo ${JSON} | jq -r '.role') "
+    echo "$TASK $(echo ${JSON} | jq -r '.state') $(echo ${JSON} | jq -r '.role')"
 done
+echo "write $(pg_isready -U basen -h localhost -p ${POSTGRES_PORT} -d basen)"
+echo "read $(pg_isready -U basen -h localhost -p ${POSTGRES_READONLY_PORT} -d basen)"
 echo "----------------"
 
 echo ""
 echo "### HAPROXY ###"
-if [[ "$(curl -w '%{http_code}' -s http://localhost:7000 --output /dev/null)" == "200" ]]; then
-    echo "http://localhost:7000 running"
+HAPROXY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["7000/tcp"][].HostPort')
+if [[ "$(curl -w '%{http_code}' -s http://localhost:${HAPROXY_PORT} --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${HAPROXY_PORT} running"
 else
-    echo "http://localhost:7000 down"
+    echo "http://localhost:${HAPROXY_PORT} down"
 fi
 echo "---------------"
 
 
 echo ""
 echo "### APP ###"
-if [[ "$(curl -w '%{http_code}' -s http://localhost:8000/user --output /dev/null)" == "200" ]]; then
-    echo "http://localhost:8000 running"
+APP_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["8000/tcp"][].HostPort')
+if [[ "$(curl -w '%{http_code}' -s http://localhost:${APP_PORT}/user --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${APP_PORT} running"
 else
-    echo "http://localhost:8000 down"
+    echo "http://localhost:${APP_PORT} down"
 fi
 echo "-----------"
