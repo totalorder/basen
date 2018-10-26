@@ -1,0 +1,20 @@
+version: '3.3'
+services:
+  node:
+    image: 127.0.0.1:5000/rsync-registry
+    build: registry/
+    ports:
+    - 5000:5000
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+    networks:
+      swarmnet:
+        aliases:
+        - registry
+
+networks:
+  swarmnet:
+    external: true

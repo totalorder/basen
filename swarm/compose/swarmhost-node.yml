@@ -5,3 +5,9 @@ services:
     image: docker:stable-dind
     ports:
     - 2375
+    - 2379
+    - 5432
+    - 5433
+    - 5000
+    - 7000
+    - 8000

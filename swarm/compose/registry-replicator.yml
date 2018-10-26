@@ -1,0 +1,16 @@
+version: '3.3'
+services:
+  node:
+    image: 127.0.0.1:5000/registry-replicator
+    build: registry-replicator/
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+    networks:
+      - swarmnet
+
+networks:
+  swarmnet:
+    external: true

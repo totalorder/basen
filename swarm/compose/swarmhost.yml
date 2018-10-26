@@ -20,6 +20,12 @@ services:
     command: --label nodename=node2
     ports:
     - 2377:2375
+    - 2379
+    - 5432
+    - 5433
+    - 5000
+    - 7000
+    - 8000
     container_name: node2
 
   node3:
@@ -28,4 +34,10 @@ services:
     command: --label nodename=node3
     ports:
     - 2378:2375
+    - 2379
+    - 5432
+    - 5433
+    - 5000
+    - 7000
+    - 8000
     container_name: node3

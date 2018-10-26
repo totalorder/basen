@@ -15,10 +15,22 @@ for CONTAINER_ID in ${CONTAINER_IDS}; do
     else
         NODE="localhost:$(echo ${INSPECT} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')"
         echo "=== $NODE ==="
-        on_node ${NODE} node ps 2> /dev/null | grep -v "tinytools" | awk '{ print $6 "\t" $2 }'
+        timeout 2 echo "$(on_node ${NODE} node ps 2> /dev/null | grep -v "tinytools" | awk '{ print $6 "\t" $2 }')"
     fi
     echo "----$(printf %${#NODE}s | tr " " "-")----"
 done
+
+PORTS=$(docker inspect $(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | head -n 1) | jq '.[].NetworkSettings.Ports')
+
+echo ""
+echo "### REGISTRY ###"
+REGISTRY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5000/tcp"][].HostPort')
+if [[ "$(curl -w '%{http_code}' -s "http://localhost:${REGISTRY_PORT}/v2/_catalog" --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${REGISTRY_PORT} running"
+else
+    echo "http://localhost:${REGISTRY_PORT} down"
+fi
+echo "----------------"
 
 echo ""
 echo "### ETCD ###"

@@ -4,7 +4,7 @@ cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
 # Populate NODES
 source include/common.sh
 
-NODE_PORT=$(docker inspect $(docker-compose -f compose/swarmhost.yml ps -q | head -n 1) | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')
+NODE_PORT=$(docker inspect $(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | head -n 1) | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')
 NODE="localhost:$NODE_PORT"
 NAME="node-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13)"
 
@@ -18,3 +18,5 @@ NEW_NODE_PORT=$(docker inspect ${CONTAINER_ID} | jq -r '.[].NetworkSettings.Port
 NEW_NODE="localhost:$NEW_NODE_PORT"
 
 on_node ${NEW_NODE} ${JOIN_CMD}
+
+DOCKER_HOST=tcp://${NODE} docker-compose -f compose/registry.yml build node
