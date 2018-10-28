@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+
+source include/common.sh
+
+CHAOS_COUNT=0
+while true; do
+    ./swarm-rm-node && ./swarm-add-node && ./swarm-rebalance;
+    CHAOS_COUNT=$((CHAOS_COUNT + 1))
+    echo "###################"
+    echo "### CHAOS COUNT: $CHAOS_COUNT"
+    echo "###################"
+done

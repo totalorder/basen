@@ -14,7 +14,7 @@ docker-compose -f compose/postgres.yml build && docker-compose -f compose/postgr
 # Deploy
 in_swarm stack deploy --compose-file compose/postgres.yml postgres
 
-NODE=`random_node`
+NODE=$(./get_node)
 on_node ${NODE} pull postgres:10 > /dev/null
 
 function etcdctl() {

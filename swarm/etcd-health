@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+source include/common.sh
+
+on_node $(./get_node) run --network swarmnet --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 cluster-health

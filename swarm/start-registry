@@ -7,7 +7,7 @@ in_swarm stack rm registry_replicator
 until [[ ! $(in_swarm stack ps registry -q) ]]; do echo "Waiting for registry stack removal..." && sleep 2; done
 until [[ ! $(in_swarm stack ps registry_replicator -q) ]]; do echo "Waiting for registry_replicator stack removal..." && sleep 2; done
 
-NODES=(`get_nodes`)
+NODES=($(./get_nodes))
 for NODE in ${NODES[@]}; do
     on_node ${NODE} rmi -f $(on_node ${NODE} images -q)
     DOCKER_HOST=tcp://${NODE} docker-compose -f compose/registry.yml build node

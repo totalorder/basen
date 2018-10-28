@@ -2,10 +2,11 @@
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
 source include/common.sh
 
+NODES=$(./get_nodes)
 CONTAINER_IDS=$(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps --filter state=up -q)
 echo "### NODES ###"
 for CONTAINER_ID in ${CONTAINER_IDS}; do
-    INSPECT=$(docker inspect ${CONTAINER_ID})
+    INSPECT=$(timeout 2 docker inspect ${CONTAINER_ID})
     STATUS=$(echo ${INSPECT} | jq -r '.[].State.Status')
 
     if [ ${STATUS} != "running" ]; then
@@ -20,12 +21,12 @@ for CONTAINER_ID in ${CONTAINER_IDS}; do
     echo "----$(printf %${#NODE}s | tr " " "-")----"
 done
 
-PORTS=$(docker inspect $(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | head -n 1) | jq '.[].NetworkSettings.Ports')
+PORTS=$(timeout 2 docker inspect $(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | head -n 1) | jq '.[].NetworkSettings.Ports')
 
 echo ""
 echo "### REGISTRY ###"
 REGISTRY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5000/tcp"][].HostPort')
-if [[ "$(curl -w '%{http_code}' -s "http://localhost:${REGISTRY_PORT}/v2/_catalog" --output /dev/null)" == "200" ]]; then
+if [[ "$(timeout 2 curl -w '%{http_code}' -s "http://localhost:${REGISTRY_PORT}/v2/_catalog" --output /dev/null)" == "200" ]]; then
     echo "http://localhost:${REGISTRY_PORT} running"
 else
     echo "http://localhost:${REGISTRY_PORT} down"
@@ -35,7 +36,7 @@ echo "----------------"
 echo ""
 echo "### ETCD ###"
 ETCD_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["2379/tcp"][].HostPort')
-if [[ "$(curl -w '%{http_code}' -s http://localhost:${ETCD_PORT}/health --output /dev/null)" == "200" ]]; then
+if [[ "$(timeout 2 curl -w '%{http_code}' -s http://localhost:${ETCD_PORT}/health --output /dev/null)" == "200" ]]; then
     echo "http://localhost:${ETCD_PORT} running"
 else
     echo "http://localhost:${ETCD_PORT} down"
@@ -47,19 +48,19 @@ echo ""
 echo "### POSTGRES ###"
 POSTGRES_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5432/tcp"][].HostPort')
 POSTGRES_READONLY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5433/tcp"][].HostPort')
-for TASK in $(tinytools dig +short postgres 2> /dev/null | sort); do
+for TASK in $(tinytools ${NODE} dig +short postgres 2> /dev/null | sort); do
     TASK=$(echo ${TASK} | sed s/[^0-9\.]//g)
-    JSON=$(tinytools curl http://${TASK}:8008 2> /dev/null)
+    JSON=$(tinytools ${NODE} curl http://${TASK}:8008 2> /dev/null)
     echo "$TASK $(echo ${JSON} | jq -r '.state') $(echo ${JSON} | jq -r '.role')"
 done
-echo "write $(pg_isready -U basen -h localhost -p ${POSTGRES_PORT} -d basen)"
-echo "read $(pg_isready -U basen -h localhost -p ${POSTGRES_READONLY_PORT} -d basen)"
+echo "write $(timeout 2 pg_isready -U basen -h localhost -p ${POSTGRES_PORT} -d basen)"
+echo "read $(timeout 2 pg_isready -U basen -h localhost -p ${POSTGRES_READONLY_PORT} -d basen)"
 echo "----------------"
 
 echo ""
 echo "### HAPROXY ###"
 HAPROXY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["7000/tcp"][].HostPort')
-if [[ "$(curl -w '%{http_code}' -s http://localhost:${HAPROXY_PORT} --output /dev/null)" == "200" ]]; then
+if [[ "$(timeout 2 curl -w '%{http_code}' -s http://localhost:${HAPROXY_PORT} --output /dev/null)" == "200" ]]; then
     echo "http://localhost:${HAPROXY_PORT} running"
 else
     echo "http://localhost:${HAPROXY_PORT} down"
@@ -70,7 +71,7 @@ echo "---------------"
 echo ""
 echo "### APP ###"
 APP_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["8000/tcp"][].HostPort')
-if [[ "$(curl -w '%{http_code}' -s http://localhost:${APP_PORT}/user --output /dev/null)" == "200" ]]; then
+if [[ "$(timeout 2 curl -w '%{http_code}' -s http://localhost:${APP_PORT}/user --output /dev/null)" == "200" ]]; then
     echo "http://localhost:${APP_PORT} running"
 else
     echo "http://localhost:${APP_PORT} down"

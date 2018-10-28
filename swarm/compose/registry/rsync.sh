@@ -22,4 +22,4 @@ cat <<EOF > /etc/rsyncd.conf
 EOF
 mkdir -p /var/lib/registry/docker/registry
 echo "$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13)" > /var/lib/registry/docker/registry/node-id
-/usr/bin/rsync --no-detach --daemon --config /etc/rsyncd.conf & # 2>&1 > /dev/null &
+/usr/bin/rsync --no-detach --daemon --config /etc/rsyncd.conf 2>&1 > /dev/null &

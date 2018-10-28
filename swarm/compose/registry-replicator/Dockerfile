@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk --no-cache add curl jq bind-tools rsync openssh
+RUN apk --no-cache add rsync
 
 ADD replicator.sh /
 

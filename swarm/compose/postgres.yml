@@ -6,7 +6,8 @@ services:
     environment:
       PATRONI_ETCD_URL: http://etcd:2379
     deploy:
-      replicas: 3
+      #replicas: 3
+      mode: global
       update_config:
         parallelism: 1
         delay: 10s

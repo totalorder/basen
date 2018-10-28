@@ -7,10 +7,12 @@ in_swarm stack remove app
 until [[ ! $(in_swarm stack ps app -q) ]]; do echo "Waiting for app stack removal..." && sleep 2; done
 
 # Push image to registry
-docker tag basen 127.0.0.1:5000/basen && docker push 127.0.0.1:5000/basen
+(cd .. && ./gradlew distDocker) && docker tag basen 127.0.0.1:5000/basen && docker push 127.0.0.1:5000/basen
 
 # Deploy
 in_swarm stack deploy --compose-file compose/app.yml app
 
 until [[ "$(curl -w '%{http_code}' -s http://localhost:8000 --output /dev/null)" == "200" ]]; do echo "Waiting for application start..." && sleep 2; done
+curl -X POST http://localhost:8000/user/1 -d 'woot'
+echo ""
 echo "SUCCESS: app is listening on http://localhost:8000"
