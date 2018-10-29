@@ -11,6 +11,7 @@ services:
     - 5000:5000
     - 7000:7000
     - 8000:8000
+    - 8008
     command: --label nodename=node1
     container_name: node1
 
@@ -26,6 +27,7 @@ services:
     - 5000
     - 7000
     - 8000
+    - 8008
     container_name: node2
 
   node3:
@@ -40,4 +42,5 @@ services:
     - 5000
     - 7000
     - 8000
+    - 8008
     container_name: node3

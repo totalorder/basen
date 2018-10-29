@@ -4,7 +4,7 @@ services:
     image: 127.0.0.1:5000/haproxy
     build: haproxy
     environment:
-      DNS_NAME: postgres
+      DNS_NAME: tasks.postgres
     ports:
       - 7000:7000
       - 5432:5432
