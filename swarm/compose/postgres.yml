@@ -12,6 +12,8 @@ services:
         delay: 10s
     ports:
       - 8008:8008
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     networks:
       swarmnet:
         aliases:
@@ -20,3 +22,6 @@ services:
 networks:
   swarmnet:
     external: true
+
+volumes:
+  pgdata:

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+source include/common.sh
+
+NODE=$1
+for VOLUME in $(on_node ${NODE} volume ls -q); do
+    FOUND=""
+    for CONTAINER_ID in $(on_node ${NODE} ps -q -a); do
+        INSPECT=$(on_node ${NODE} inspect ${CONTAINER_ID})
+        NAME=$(echo ${INSPECT} | jq -r '.[].Name')
+        MOUNTS=$(echo ${INSPECT} | jq -r '.[].Mounts[].Name')
+        if [ $(echo ${MOUNTS} | grep ${VOLUME}) ]; then
+            echo "${NODE} ${NAME} ${VOLUME}"
+            FOUND="true"
+        fi
+    done
+
+    if [ -z ${FOUND} ]; then
+        echo "Unmatched: ${NODE} ${VOLUME}"
+    fi
+done
