@@ -1,24 +1,18 @@
 #!/usr/bin/env bash
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
 
-# Remove node list
-rm nodelist.txt
-
-# Store node names
-echo "localhost:2376" > nodelist.txt
-echo "localhost:2377" >> nodelist.txt
-echo "localhost:2378" >> nodelist.txt
-
-# Populate NODES
 source include/common.sh
 
-NODES=(`get_nodes`)
-
 # Remove existing nodes
-docker-compose -f compose/swarmhost.yml down
+docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml down
+
+# Prune volumes to reclaim disk space
+docker volume prune -f
 
 # Start dind-nodes
 docker-compose -f compose/swarmhost.yml up -d
+
+NODES=($(./get_nodes))
 
 # Start first manager
 on_node ${NODES[0]} swarm init --advertise-addr $(docker inspect node1 |  jq -r '.[].NetworkSettings.Networks[].IPAddress')
@@ -31,8 +25,7 @@ for NODE in ${NODES[@]:1}; do
     on_node ${NODE} ${JOIN_CMD}
 done
 
-# Spin up docker registry
-in_swarm service create --name registry --publish 5000:5000 registry:2
-
 # Create network
 in_swarm network create --attachable --driver overlay swarmnet
+
+in_swarm service create --network swarmnet --mode global --name tinytools giantswarm/tiny-tools sh -c 'while true; do sleep 60; done'

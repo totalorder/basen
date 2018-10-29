@@ -4,11 +4,12 @@ source include/common.sh
 
 # Remove existing
 in_swarm stack remove etcd
+until [[ ! $(in_swarm stack ps etcd -q) ]]; do echo "Waiting for etcd stack removal..." && sleep 2; done
 
 # Deploy etcd service
 in_swarm stack deploy --compose-file compose/etdc.yml etcd
 
-NODE=`random_node`
+NODE=$(./get_node)
 on_node ${NODE} pull quay.io/coreos/etcd:latest > /dev/null
 
 function etcdctl() {
@@ -16,7 +17,7 @@ function etcdctl() {
 }
 
 # Wait until etcd_node service is healthy, and etcd-cluster is healthy
-until [ ! "$(on_node ${NODE} service ps --format '{{.CurrentState}}' etcd_node | grep -v Running)" ] ; do echo "Waiting for etc_node healthy..." && sleep 2; done
+until [ ! "$(on_node ${NODE} service ps --format '{{.DesiredState .CurrentState}}' etcd_node | grep -v "Running Running")" ] ; do echo "Waiting for etc_node healthy..." && sleep 2; done
 until etcdctl cluster-health ; do echo "Waiting for healthy cluster..." && sleep 2; done
 
 # Remove bootstrap peer from etcd-cluster

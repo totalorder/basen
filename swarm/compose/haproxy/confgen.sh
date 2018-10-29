@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 echo "confgen started with dns name: ${DNS_NAME}"
 while :; do
     SERVERS=""

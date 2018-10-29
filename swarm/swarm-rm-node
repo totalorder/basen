@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+
+# Populate NODES
+source include/common.sh
+
+if [ ! -z "$1" ]; then
+    CONTAINER_ID=$(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps | grep "$1->2375" | cut -d ' ' -f 1)
+else
+    CONTAINER_ID=$(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | shuf -n 1)
+fi
+
+echo "Removing container $CONTAINER_ID"
+docker rm -f ${CONTAINER_ID}
+
+CONTAINER_IDS=$(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps --filter state=up -q)
+
+SWARM_REMOVED=
+ETCD_REMOVED=
+while true; do
+    for CONTAINER_ID in ${CONTAINER_IDS}; do
+        INSPECT=$(docker inspect ${CONTAINER_ID})
+        STATUS=$(echo ${INSPECT} | jq -r '.[].State.Status')
+        if [ ${STATUS} == "running" ]; then
+            NODE="localhost:$(echo ${INSPECT} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')"
+            for N in $(on_node ${NODE} node ls -q); do
+                STATE=$(on_node ${NODE} node inspect ${N} | jq -r '.[].Status.State')
+                if [ "$STATE" == "down" ]; then
+                    echo "Removing $N with state $STATE from swarm"
+                    on_node ${NODE} node demote ${N}
+                    on_node ${NODE} node rm ${N}
+
+                    SWARM_REMOVED="true"
+                    break
+                else
+                    function etcdctl() {
+                        on_node ${NODE} run --network swarmnet --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 $@
+                    }
+                    DEAD_ETCD="$(etcdctl cluster-health | grep unreachable | cut -d ' ' -f 2)"
+                    if [ ! -z ${DEAD_ETCD} ]; then
+                        until echo "Removing ${DEAD_ETCD} from etcd" && etcdctl member remove ${DEAD_ETCD} ; do sleep 2; done
+                        ETCD_REMOVED="true"
+                        break
+                    fi
+                fi
+            done
+        fi
+        if [ ${SWARM_REMOVED} ] && [ ${ETCD_REMOVED} ]; then
+            break 2
+        fi
+
+    done
+    echo "Waiting for node to die..."
+    sleep 2
+done
+
+docker volume prune -f

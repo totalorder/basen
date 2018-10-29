@@ -3,6 +3,8 @@ cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
 source include/common.sh
 
 ./start-swarm
+./start-registry
 ./start-etcd
 ./start-postgres
 ./start-haproxy
+./start-app

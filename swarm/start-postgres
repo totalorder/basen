@@ -4,8 +4,38 @@ source include/common.sh
 
 # Remove existing
 in_swarm stack remove postgres
-until [ -z "$(in_swarm network ls | grep postgres_default)" ]; do echo "Waiting for postgres network removal..." && sleep 2; done
+until [[ ! $(in_swarm stack ps postgres -q) ]]; do echo "Waiting for postgres stack removal..." && sleep 2; done
+
 in_swarm run --network swarmnet --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 rm -r /service/batman
+
+# Push image to registry
+docker-compose -f compose/postgres.yml build && docker-compose -f compose/postgres.yml push
 
 # Deploy
 in_swarm stack deploy --compose-file compose/postgres.yml postgres
+
+NODE=$(./get_node)
+on_node ${NODE} pull postgres:10 > /dev/null
+
+function etcdctl() {
+    on_node ${NODE} run --network swarmnet --rm quay.io/coreos/etcd:latest etcdctl --endpoints http://etcd:2379 $@
+}
+
+until etcdctl get /service/batman/leader ; do echo "Waiting for postgres leader election..." && sleep 2; done
+LEADER_ID=$(etcdctl get /service/batman/leader)
+LEADER_HOST=$(etcdctl get /service/batman/members/${LEADER_ID} | cut -d '/' -f 6)
+IFS=: read LEADER_IP LEADER_PORT <<< "${LEADER_HOST}"
+# TODO: Use jq to find correct port
+LEADER_PORT=5432
+echo "Postgres leader elected: $LEADER_IP:$LEADER_PORT"
+
+function psql_execute() {
+    on_node ${NODE} run -e PGPASSWORD=postgres --network swarmnet --rm postgres:10 psql -h ${LEADER_IP} -U postgres -p ${LEADER_PORT} -d postgres -c "$@"
+}
+
+until [[ $(psql_execute 'SELECT 1' > /dev/null 2>&1 ; echo $?) == "0" ]]; do echo "Waiting for postgres leader ready..." && sleep 2; done
+
+echo "Creating database basen..."
+psql_execute "CREATE ROLE basen WITH SUPERUSER CREATEROLE LOGIN PASSWORD 'basen' ;"
+psql_execute "CREATE DATABASE basen WITH OWNER 'basen';"
+echo "SUCCESS: postgresql is online"

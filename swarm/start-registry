@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+in_swarm stack rm registry
+in_swarm stack rm registry_replicator
+until [[ ! $(in_swarm stack ps registry -q) ]]; do echo "Waiting for registry stack removal..." && sleep 2; done
+until [[ ! $(in_swarm stack ps registry_replicator -q) ]]; do echo "Waiting for registry_replicator stack removal..." && sleep 2; done
+
+NODES=($(./get_nodes))
+for NODE in ${NODES[@]}; do
+    on_node ${NODE} rmi -f $(on_node ${NODE} images -q)
+    DOCKER_HOST=tcp://${NODE} docker-compose -f compose/registry.yml build node
+done
+
+in_swarm stack deploy --compose-file compose/registry.yml registry
+
+until [[ "$(curl -w '%{http_code}' -s http://localhost:5000/v2/_catalog --output /dev/null)" == "200" ]]; do echo "Waiting for registry start..." && sleep 2; done
+
+docker-compose -f compose/registry.yml build && docker-compose -f compose/registry.yml push
+docker-compose -f compose/registry-replicator.yml build && docker-compose -f compose/registry-replicator.yml push
+
+in_swarm stack deploy --compose-file compose/registry-replicator.yml registry_replicator
+
+echo "SUCCESS: registry listening on http://localhost:5000"

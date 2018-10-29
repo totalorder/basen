@@ -1,8 +1,5 @@
-FROM haproxy:1.8.14
-RUN apt update
-RUN apt install -y dnsutils
-RUN apt install -y gettext
-RUN apt install -y procps
+FROM haproxy:1.8.14-alpine
+RUN apk add --no-cache bind-tools gettext procps
 COPY docker-entrypoint-override.sh /
 COPY confgen.sh /
 COPY server.part /

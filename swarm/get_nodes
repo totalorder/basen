@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+NODES=()
+for CONTAINER_ID in $(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q); do
+    PORT=$(docker inspect ${CONTAINER_ID} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')
+    if [ ! -z ${PORT} ]; then
+        NODES+=("localhost:$PORT")
+    fi
+done
+
+echo ${NODES[@]}

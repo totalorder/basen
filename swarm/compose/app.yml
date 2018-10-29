@@ -1,22 +1,20 @@
 version: '3.3'
 services:
   node:
-    image: 127.0.0.1:5000/patroni
-    build: patroni/
     environment:
-      PATRONI_ETCD_URL: http://etcd:2379
+      ENVIRONMENTS: swarm
+    image: 127.0.0.1:5000/basen
+    ports:
+    - 8000:8080
     deploy:
-      mode: global
+      replicas: 3
       update_config:
         parallelism: 1
         delay: 10s
-    ports:
-      - 8008:8008
     networks:
       swarmnet:
         aliases:
-        - postgres
-
+        - app
 networks:
   swarmnet:
     external: true

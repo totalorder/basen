@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+source include/common.sh
+
+NODES=$(./get_nodes)
+CONTAINER_IDS=$(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps --filter state=up -q)
+INSPECTS=()
+echo "### NODES ###"
+for CONTAINER_ID in ${CONTAINER_IDS}; do
+    INSPECT=$(timeout 2 docker inspect ${CONTAINER_ID})
+    INSPECTS+=("${INSPECT}")
+    STATUS=$(echo ${INSPECT} | jq -r '.[].State.Status')
+    NAME=$(echo ${INSPECT} | jq -r '.[].Name')
+
+    if [ ${STATUS} != "running" ]; then
+        NODE="localhost:????"
+        echo "=== $NAME ($NODE) ==="
+        echo "$STATUS"
+    else
+        NODE="localhost:$(echo ${INSPECT} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')"
+        echo "=== $NAME ($NODE) ==="
+        timeout 2 echo "$(on_node ${NODE} node ps 2> /dev/null | grep -v "tinytools" | grep -v "Shutdown" | awk '{ print $6 "\t" $2 }')"
+    fi
+    echo "-----$(printf %$((${#NODE} + ${#NAME}))s | tr " " "-")------"
+done
+
+PORTS=$(timeout 2 docker inspect $(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | head -n 1) | jq '.[].NetworkSettings.Ports')
+
+echo ""
+echo "### REGISTRY ###"
+REGISTRY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5000/tcp"][].HostPort')
+if [[ "$(timeout 2 curl -w '%{http_code}' -s "http://localhost:${REGISTRY_PORT}/v2/_catalog" --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${REGISTRY_PORT} running"
+else
+    echo "http://localhost:${REGISTRY_PORT} down"
+fi
+echo "----------------"
+
+echo ""
+echo "### ETCD ###"
+ETCD_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["2379/tcp"][].HostPort')
+if [[ "$(timeout 2 curl -w '%{http_code}' -s http://localhost:${ETCD_PORT}/health --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${ETCD_PORT} running"
+else
+    echo "http://localhost:${ETCD_PORT} down"
+fi
+echo "------------"
+
+
+echo ""
+echo "### POSTGRES ###"
+POSTGRES_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5432/tcp"][].HostPort')
+POSTGRES_READONLY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["5433/tcp"][].HostPort')
+
+for INSPECT_IDX in $(seq ${#INSPECTS[@]}); do
+    INSPECT="${INSPECTS[$((${INSPECT_IDX} - 1))]}"
+    NAME=$(echo ${INSPECT} | jq -r '.[].Name')
+    NODE="localhost:$(echo ${INSPECT} | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')"
+    POSTGRES_HOSTNAME=$(on_node ${NODE} exec -it $(on_node ${NODE} ps --filter name=postgres -q) sh -c 'echo "${HOSTNAME}"' | head -n 1)
+    POSTGRES_HOSTNAME=$(echo ${POSTGRES_HOSTNAME} | sed 's/[^0-9a-zA-Z\-\.]//g')
+    JSON=$(tinytools ${NODE} curl http://${POSTGRES_HOSTNAME}:8008)
+    STATE=$(echo ${JSON} | jq -r '. | [.role, .state] | join(" ")')
+    echo "$NAME $STATE"
+done
+
+echo "write $(timeout 2 pg_isready -U basen -h localhost -p ${POSTGRES_PORT} -d basen)"
+echo "read $(timeout 2 pg_isready -U basen -h localhost -p ${POSTGRES_READONLY_PORT} -d basen)"
+echo "----------------"
+
+echo ""
+echo "### HAPROXY ###"
+HAPROXY_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["7000/tcp"][].HostPort')
+if [[ "$(timeout 2 curl -w '%{http_code}' -s http://localhost:${HAPROXY_PORT} --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${HAPROXY_PORT} running"
+else
+    echo "http://localhost:${HAPROXY_PORT} down"
+fi
+echo "---------------"
+
+
+echo ""
+echo "### APP ###"
+APP_PORT=$(echo "$PORTS" | jq -r 2> /dev/null '.["8000/tcp"][].HostPort')
+if [[ "$(timeout 2 curl -w '%{http_code}' -s http://localhost:${APP_PORT}/user --output /dev/null)" == "200" ]]; then
+    echo "http://localhost:${APP_PORT} running"
+else
+    echo "http://localhost:${APP_PORT} down"
+fi
+echo "-----------"

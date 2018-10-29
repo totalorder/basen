@@ -1,21 +1,19 @@
 version: '3.3'
 services:
   node:
-    image: 127.0.0.1:5000/patroni
-    build: patroni/
-    environment:
-      PATRONI_ETCD_URL: http://etcd:2379
+    image: 127.0.0.1:5000/rsync-registry
+    build: registry/
+    ports:
+    - 5000:5000
     deploy:
-      mode: global
+      replicas: 1
       update_config:
         parallelism: 1
         delay: 10s
-    ports:
-      - 8008:8008
     networks:
       swarmnet:
         aliases:
-        - postgres
+        - registry
 
 networks:
   swarmnet:

@@ -12,6 +12,7 @@ import java.util.function.Function;
 import javax.sql.DataSource;
 
 import lombok.extern.slf4j.Slf4j;
+import org.flywaydb.core.Flyway;
 import se.deadlock.okok.Client;
 import se.totalorder.basen.api.UserApi;
 import se.totalorder.basen.confer.Confer;
@@ -29,6 +30,12 @@ public class Application {
     final Config config = Confer.builder().envs(envs).build();
 
     final DataSource dataSource = new HikariDataSource(DatabaseConf.get(config));
+
+    log.info("Migrating database...");
+    final Flyway flyway = new Flyway();
+    flyway.setDataSource(dataSource);
+    flyway.migrate();
+
     final TxMan transactionManager = new TxMan(dataSource);
 
     final Client.Builder clientBuilder = ClientConf.createClient();

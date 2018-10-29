@@ -1,0 +1,14 @@
+version: '3.3'
+services:
+  node:
+    privileged: true
+    image: docker:stable-dind
+    ports:
+    - 2375
+    - 2379
+    - 5432
+    - 5433
+    - 5000
+    - 7000
+    - 8000
+    - 8008

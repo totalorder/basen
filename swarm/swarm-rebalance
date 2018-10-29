@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}"))")" || exit
+
+# Populate NODES
+source include/common.sh
+
+NODE_PORT=$(docker inspect $(docker-compose -f compose/swarmhost.yml -f compose/swarmhost-node.yml ps -q | head -n 1) | jq -r '.[].NetworkSettings.Ports["2375/tcp"][].HostPort')
+NODE="localhost:$NODE_PORT"
+SERVICES="app_node haproxy_node registry_replicator_node"
+
+for SERVICE in ${SERVICES}; do
+    echo "Rebalancing $SERVICE"
+    on_node ${NODE} service update --force ${SERVICE} &
+done
+
+wait
+
+UNBALANCED="true"
+while [ "$UNBALANCED" ]; do
+    UNBALANCED=""
+
+    for SERVICE_STATUS in $(on_node ${NODE} service inspect ${SERVICES} | jq -r '.[] | [.Spec.Name, .UpdateStatus.State] | join(",")'); do
+        IFS=',' read SERVICE STATUS <<< "${SERVICE_STATUS}"
+        if [ "$STATUS" != "completed" ]; then
+            UNBALANCED="true"
+            echo "$SERVICE unbalanced: $STATUS"
+            if [ "$STATUS" == "paused" ]; then
+                echo "Re-updating paused service..."
+                on_node ${NODE} service update --force ${SERVICE}
+            fi
+        fi
+    done
+    sleep 2
+done
+
+echo "rebalanced services: $SERVICES "
