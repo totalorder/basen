@@ -32,8 +32,9 @@ public class Application {
     final DataSource dataSource = new HikariDataSource(DatabaseConf.get(config));
 
     log.info("Migrating database...");
-    final Flyway flyway = new Flyway();
-    flyway.setDataSource(dataSource);
+    final Flyway flyway = Flyway.configure()
+        .dataSource(dataSource)
+        .load();
     flyway.migrate();
 
     final TxMan transactionManager = new TxMan(dataSource);

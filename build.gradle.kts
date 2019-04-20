@@ -1,7 +1,7 @@
 plugins {
     java
     application
-    id("io.franzbecker.gradle-lombok") version "1.14"
+    id("io.franzbecker.gradle-lombok") version "3.0.0"
 }
 
 group = "se.totalorder"
@@ -23,26 +23,26 @@ repositories {
 }
 
 dependencies {
-    compile("io.javalin:javalin:2.2.0")
+    compile("io.javalin:javalin:2.8.0")
     compile("ch.qos.logback:logback-classic:1.2.3")
-    compile("com.zaxxer:HikariCP:3.2.0")
-    compile("org.flywaydb:flyway-core:5.1.4")
+    compile("com.zaxxer:HikariCP:3.3.1")
+    compile("org.flywaydb:flyway-core:5.2.4")
     compile("org.postgresql:postgresql:42.2.5")
-    compile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.7")
-    compile("com.google.guava:guava:27.0-jre")
-    compile("com.typesafe:config:1.3.2")
+    compile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8")
+    compile("com.google.guava:guava:27.1-jre")
+    compile("com.typesafe:config:1.3.3")
     compile("se.deadlock:txman:0.0.2-SNAPSHOT")
     compile("se.deadlock:okok:0.0.1-SNAPSHOT")
 
-    testCompile("org.junit.jupiter:junit-jupiter-api:5.3.1")
-    testCompile("org.hamcrest:hamcrest-library:1.3")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.3.1")
-    testCompile("org.mockito:mockito-core:2.23.0")
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.4.2")
+    testCompile("org.hamcrest:hamcrest-library:2.1")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.4.2")
+    testCompile("org.mockito:mockito-core:2.27.0")
     testCompile("se.deadlock:composed:0.0.1")
 }
 
 lombok {
-    version = "1.18.2"
+    version = "1.18.6"
     sha256 = ""
 }
 
