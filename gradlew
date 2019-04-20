@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-echo "Overriding \$JAVA_HOME in ./gradlew to java 11"
+#JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+#echo "Overriding \$JAVA_HOME in ./gradlew to java 11"
 
 ##############################################################################
 ##
